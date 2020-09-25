@@ -7,10 +7,11 @@
                It has some utilities to manipulate the MDC
                (`with`-style macro and ring middleware)."}
   codesmith.logger.core
-  (:require [cheshire.core :as json]
+  (:require [cheshire.core]
             [clojure.pprint :as pp]
             [clojure.string :as str])
-  (:import [org.slf4j LoggerFactory Logger]))
+  (:import [org.slf4j LoggerFactory Logger]
+           [codesmith.logger ClojureMapMarker Identity]))
 
 ;; # Logger definition
 
@@ -41,20 +42,15 @@
 (defn coerce-string [arg]
   (if (instance? String arg)
     arg
-    `(Identity/string ~arg)))
+    `(str ~arg)))
 
 (defn coerce-object [arg]
   (if (some #(instance? % arg) [Long Double Integer])
-    `(Identity/identity ~arg)
+    `(identity ~arg)
     arg))
 
-(defmacro create-array [args]
-  (let [array-sym (gensym)]
-    `(let [~array-sym (Identity/makeArray ~(count args))]
-       ~@(map-indexed (fn [i arg]
-                        `(Identity/setArray ~array-sym ~i ~(coerce-object arg)))
-                      args)
-       ~array-sym)))
+(defn ^"[Ljava.lang.Object;" into-object-array [& args]
+  (into-array Object args))
 
 (defmacro log-c
   ([method ctx]
@@ -91,7 +87,7 @@
            (~method
              (ClojureMapMarker. ~ctx)
              ~(coerce-string msg)
-             (create-array ~args))))
+             (into-object-array ~@args))))
      (throw (IllegalStateException. "(deflogger) has not been called")))))
 
 (defmacro log-m [method msg & args]
@@ -112,7 +108,7 @@
       `(. ~'⠇⠕⠶⠻
           (~method
             ~(coerce-string msg)
-            (create-array ~args))))
+            (into-object-array ~@args))))
     (throw (IllegalStateException. "(deflogger) has not been called"))))
 
 (defmacro log-e

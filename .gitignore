@@ -1,3 +1,6 @@
 /.idea
 /logger.iml
 /.cpcache
+/target
+/.nrepl-port
+/.lein-failures

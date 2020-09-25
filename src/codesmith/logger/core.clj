@@ -8,7 +8,7 @@
             [clojure.pprint :as pp]
             [clojure.string :as str])
   (:import [org.slf4j LoggerFactory Logger]
-           [codesmith.logger ClojureMapMarker Identity]))
+           [codesmith.logger ClojureMapMarker]))
 
 ;; # Logger definition
 
@@ -45,6 +45,11 @@
   (if (some #(instance? % arg) [Long Double Integer])
     `(identity ~arg)
     arg))
+
+(defn coerce-throwable ^Throwable [e]
+  (if (instance? Throwable e)
+    e
+    (ex-info (str e) {})))
 
 (defn ^"[Ljava.lang.Object;" into-object-array [& args]
   (into-array Object args))
@@ -110,12 +115,12 @@
 
 (defmacro log-e
   ([method e]
-   `(let [e#   (Identity/throwable ~e)
+   `(let [e#   (coerce-throwable ~e)
           msg# (.getMessage e#)]
       (log-e ~method e# msg#)))
   ([method e msg]
    (if (resolve '⠇⠕⠶⠻)
-     `(let [e#     (Identity/throwable ~e)
+     `(let [e#     (coerce-throwable ~e)
             e-ctx# (ex-data e#)]
         (if e-ctx#
           (. ~'⠇⠕⠶⠻
@@ -130,7 +135,7 @@
      (throw (IllegalStateException. "(deflogger) has not been called"))))
   ([method e ctx msg]
    (if (resolve '⠇⠕⠶⠻)
-     `(let [e#     (Identity/throwable ~e)
+     `(let [e#     (coerce-throwable ~e)
             e-ctx# (ex-data e#)
             ctx#   ~ctx]
         (if e-ctx#

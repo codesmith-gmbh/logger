@@ -54,23 +54,9 @@ public class ClojureMapMarker extends LogstashMarker implements StructuredArgume
         }
     }
 
-    public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        if (map != null) {
-            map.forEach((k, v) -> {
-                builder.append((String) NAME.invoke(k));
-                builder.append(" ");
-                Object value = v instanceof IDeref ? ((IDeref) v).deref() : v;
-                try {
-                    builder.append((String) GENERATE_STRING.invoke(value));
-                } catch (Exception e) {
-                    LOGGER.warn("Serialization error", e);
-                    builder.append((String) PR_STR.invoke(value));
-                }
-                builder.append(", ");
-            });
-        }
-        return builder.toString();
+    @Override
+    protected String toStringSelf() {
+        return (String) PR_STR.invoke(map);
     }
 
 }

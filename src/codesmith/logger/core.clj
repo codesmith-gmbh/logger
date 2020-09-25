@@ -1,17 +1,16 @@
 (ns ^{:author "Stanislas Nanchen"
-      :doc    "smbh.log is a simple wrapper on logback (slf4j) and net.logstash.logback.
+      :doc    "Codesmith Logger is a simple wrapper on logback (slf4j) and net.logstash.logback.
 
                To use the library, it is necessary to call the macro `deflogger`
                before any logging macro is called.
 
                It has some utilities to manipulate the MDC
                (`with`-style macro and ring middleware)."}
-smbh.log.core
+  codesmith.logger.core
   (:require [cheshire.core :as json]
             [clojure.pprint :as pp]
             [clojure.string :as str])
-  (:import [org.slf4j LoggerFactory Logger]
-           [smbh.log ClojureMapMarker Identity]))
+  (:import [org.slf4j LoggerFactory Logger]))
 
 ;; # Logger definition
 

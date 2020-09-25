@@ -1,9 +1,9 @@
-package smbh.log;
+package codesmith.logger;
 
 /**
- * The clojure compiler "optimizes" Integer, Long and Double literals (cf. Compiler#NumberExpr) for unboxed access and it
- * interfere with the method matching during macro expansion. We add a stupid "identity" function that will get inlined
- * during JIT. The impact should be minimal.
+ * The clojure compiler optimizes Integer, Long and Double literals (cf. Compiler#NumberExpr) for unboxed access and it
+ * interfere with the method matching during macro expansion. We add a simple "identity" function to avoid
+ * this optimization.
  */
 public class Identity {
 

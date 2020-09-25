@@ -1,6 +1,6 @@
-(ns smbh.log.core-test
+(ns codesmith.logger.core-test
   (:require [clojure.test :refer :all]
-            [smbh.log.core :as log])
+            [codesmith.logger.core :as log])
   (:import [org.slf4j Logger]))
 
 (log/deflogger)

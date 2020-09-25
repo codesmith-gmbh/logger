@@ -1,4 +1,4 @@
-package smbh.log;
+package codesmith.logger;
 
 import clojure.java.api.Clojure;
 import clojure.lang.IDeref;

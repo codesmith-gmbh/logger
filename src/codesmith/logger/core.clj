@@ -2,10 +2,7 @@
       :doc    "Codesmith Logger is a simple wrapper on logback (slf4j) and net.logstash.logback.
 
                To use the library, it is necessary to call the macro `deflogger`
-               before any logging macro is called.
-
-               It has some utilities to manipulate the MDC
-               (`with`-style macro and ring middleware)."}
+               before any logging macro is called."}
   codesmith.logger.core
   (:require [cheshire.core]
             [clojure.pprint :as pp]

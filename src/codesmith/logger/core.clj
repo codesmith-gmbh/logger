@@ -70,9 +70,11 @@
     `(str ~arg)))
 
 (defn coerce-object [arg]
-  (if (some #(instance? % arg) [Long Double Integer])
-    `(identity ~arg)
-    arg))
+  (if (instance? Long arg)
+    `(Long/valueOf ~arg)
+    (if (instance? Double arg)
+      `(Double/valueOf ~arg)
+      arg)))
 
 (defn coerce-throwable ^Throwable [e]
   (if (instance? Throwable e)

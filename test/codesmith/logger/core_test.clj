@@ -97,6 +97,11 @@
   (is (not (log/error-e (ex-info "hello" {}) "hello 1 ")))
   (is (not (log/error-e (ex-info "hello" {}) {} "hello 2"))))
 
+(deftest constant-coercing
+  (is (not (log/error-m "hello {}" 1)))
+  (is (not (log/error-m "hello {}" 1.2)))
+  (is (not (log/error-m "hello {}" true))))
+
 (deftest throwable-coercion
   (is (not (log/error-e "hello"))))
 

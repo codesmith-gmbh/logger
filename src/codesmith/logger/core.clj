@@ -9,9 +9,32 @@
             [clojure.string :as str]
             [cheshire.core :as json])
   (:import [org.slf4j LoggerFactory Logger Marker]
-           [net.logstash.logback.marker DeferredLogstashMarker RawJsonAppendingMarker]
-           [java.util.function Supplier]
+           [net.logstash.logback.marker RawJsonAppendingMarker]
            [clojure.lang IDeref]))
+
+;; # Configuration
+
+(def default-context-logging-key "context")
+
+(def context-logging-key default-context-logging-key)
+
+(defn set-context-logging-key! [logging-key]
+  (alter-var-root #'context-logging-key (constantly logging-key)))
+
+(defn default-context-pre-logging-transformation [ctx]
+  (persistent!
+    (reduce-kv
+      (fn [acc k v]
+        (assoc! acc k (if (instance? IDeref v)
+                        @v
+                        v)))
+      (transient {})
+      ctx)))
+
+(def context-pre-logging-transformation default-context-pre-logging-transformation)
+
+(defn set-context-pre-logging-transformation! [tranformation]
+  (alter-var-root #'context-pre-logging-transformation (constantly tranformation)))
 
 ;; # Logger definition
 
@@ -62,20 +85,13 @@
   (into-array Object args))
 
 (defn ^Marker ctx-marker [ctx]
-  (let [ctx   (persistent!
-                (reduce-kv
-                  (fn [acc k v]
-                    (assoc! acc k (if (instance? IDeref v)
-                                    @v
-                                    v)))
-                  (transient {})
-                  ctx))
+  (let [ctx   (context-pre-logging-transformation ctx)
         value (try
                 (json/generate-string ctx)
                 (catch Exception e
                   (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
                   (json/generate-string (pr-str ctx))))]
-    (RawJsonAppendingMarker. "context" value)))
+    (RawJsonAppendingMarker. context-logging-key value)))
 
 (defn level-pred [method]
   (let [method-name (name method)]

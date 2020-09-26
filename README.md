@@ -10,8 +10,8 @@ A logback/logstash appender clojure wrapper
 
 The motivation for the `codesmith/logger` library is to use the
 [Logstash Logback Encoder](https://github.com/logstash/logstash-logback-encoder) in Clojure projects.
-The Logstash Logback Encoder is an encoder for [Logback](http://logback.qos.ch) that emits Logstash
-compatible JSON string for every logging events. The Codesmith logger mosly consists of a thin macro
+The Logstash Logback Encoder is an encoder for [Logback](http://logback.qos.ch) that emits a Logstash
+compatible JSON string for every logging events. The library consists of a thin macro
 layer on top of [Slf4j](http://www.slf4j.org).
 
 ## Usage
@@ -19,8 +19,8 @@ layer on top of [Slf4j](http://www.slf4j.org).
 ### In Clojure
 
 The logging macros are in the namespace `codesmith.logger.core`. 
-The library requires a [Logger] in every namespace where the logging macros is used. This is accomplished
-by calling the macro `deflogger`, typically called at the top of the namespace file. The macro 
+The library requires a [Logger] instance in every namespace where the logging macros is used.
+This is accomplished by calling the macro `deflogger`, typically called at the top of the namespace file. The macro 
 creates a var in the namespace with the name `⠇⠕⠶⠻`. You must avoid creating a var with the same name.
 
 ```clojure
@@ -28,6 +28,8 @@ creates a var in the namespace with the name `⠇⠕⠶⠻`. You must avoid crea
   (require [codesmith.logger.core :as log]))
 
 (log/deflogger)
+
+;; The namespace can use the logging macros
 ``` 
 
 The logger macros come in three families: context (ending with `-c`), message (ending with `-m`) and
@@ -52,7 +54,7 @@ context and message; context, format string and arguments.
 The `info-c` macro produces code that checks if the info log level is enabled and it guaranties that
 the json transformation happens exactly once. The json transformation is handled by the 
 library `cheshire`. If the context is not encodable by cheshire, the context is encoded via `pr-str`
-and emitted as string. A warning log event is emitted in that case.
+and emitted as string. The library logs a warning in that case.
 
 ```clojure
 (log/info-c {:key +})
@@ -90,8 +92,7 @@ As for the `info-c` macro, the `info-e` macro produces code that checks if the i
 and it guaranties that the json transformation happens exactly once.
 The json transformation is handled by the library `cheshire`.
 If the first argument is not a Throwable, the library will wrap a string representation of
-that value with `ex-info`.
-A warning log event is emitted in that case.
+that value with `ex-info`. The library logs a warning in that case.
 
 ```clojure
 (log/info-e 1)

@@ -10,7 +10,8 @@
             [cheshire.core :as json])
   (:import [org.slf4j LoggerFactory Logger Marker]
            [net.logstash.logback.marker DeferredLogstashMarker RawJsonAppendingMarker]
-           [java.util.function Supplier]))
+           [java.util.function Supplier]
+           [clojure.lang IDeref]))
 
 ;; # Logger definition
 
@@ -53,59 +54,80 @@
 (defn coerce-throwable ^Throwable [e]
   (if (instance? Throwable e)
     e
-    (ex-info (str e) {})))
+    (let [e-str (str e)]
+      (.warn ⠇⠕⠶⠻ "Value {} is not a throwable; wrapping in ex-info" e-str)
+      (ex-info e-str {}))))
 
 (defn ^"[Ljava.lang.Object;" into-object-array [& args]
   (into-array Object args))
 
 (defn ^Marker ctx-marker [m]
-  (DeferredLogstashMarker.
-    (reify
-      Supplier
-      (get [this]
-        (let [value (try
-                      (json/generate-string m)
-                      (catch Exception e
-                        (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
-                        (json/generate-string (pr-str m))))]
-          (RawJsonAppendingMarker. "context" value))))))
+  (let [defer-map (persistent!
+                    (reduce-kv
+                      (fn [acc k v]
+                        (assoc! acc k (if (instance? IDeref v)
+                                        @v
+                                        v)))
+                      (transient {})
+                      m))
+        value     (try
+                    (json/generate-string defer-map)
+                    (catch Exception e
+                      (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
+                      (json/generate-string (pr-str defer-map))))]
+    (RawJsonAppendingMarker. "context" value)))
+
+(defn level-pred [method]
+  (let [method-name (name method)]
+    (symbol
+      (str
+        "is"
+        (str/upper-case (subs method-name 0 1))
+        (subs method-name 1)
+        "Enabled"))))
 
 (defmacro log-c
   ([method ctx]
    (if (resolve '⠇⠕⠶⠻)
-     `(. ~'⠇⠕⠶⠻
-         (~method (ctx-marker ~ctx) ""))
+     `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+        (. ~'⠇⠕⠶⠻
+           (~method (ctx-marker ~ctx) "")))
      (throw (IllegalStateException. "(deflogger) has not been called"))))
   ([method ctx msg]
    (if (resolve '⠇⠕⠶⠻)
-     `(. ~'⠇⠕⠶⠻
-         (~method
-           (ctx-marker ~ctx)
-           ~(coerce-string msg)))
+     `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+        (. ~'⠇⠕⠶⠻
+           (~method
+             (ctx-marker ~ctx)
+             ~(coerce-string msg))))
      (throw (IllegalStateException. "(deflogger) has not been called"))))
   ([method ctx msg & args]
    (if (resolve '⠇⠕⠶⠻)
      (case (count args)
-       0 `(. ~'⠇⠕⠶⠻
-             (~method
-               (ctx-marker ~ctx)
-               ~(coerce-string msg)))
-       1 `(. ~'⠇⠕⠶⠻
+       0 `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+            (. ~'⠇⠕⠶⠻
+               (~method
+                 (ctx-marker ~ctx)
+                 ~(coerce-string msg))))
+       1 `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+            (. ~'⠇⠕⠶⠻
+               (~method
+                 (ctx-marker ~ctx)
+                 ~(coerce-string msg)
+                 ~(coerce-object (first args)))))
+       2 `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+            (. ~'⠇⠕⠶⠻
+               (~method
+                 (ctx-marker ~ctx)
+                 ~(coerce-string msg)
+                 ~(coerce-object (first args))
+                 ~(coerce-object (second args)))))
+       `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+          (. ~'⠇⠕⠶⠻
              (~method
                (ctx-marker ~ctx)
                ~(coerce-string msg)
-               ~(coerce-object (first args))))
-       2 `(. ~'⠇⠕⠶⠻
-             (~method
-               (ctx-marker ~ctx)
-               ~(coerce-string msg)
-               ~(coerce-object (first args))
-               ~(coerce-object (second args))))
-       `(. ~'⠇⠕⠶⠻
-           (~method
-             (ctx-marker ~ctx)
-             ~(coerce-string msg)
-             (into-object-array ~@args))))
+               (into-object-array ~@args)))))
      (throw (IllegalStateException. "(deflogger) has not been called")))))
 
 (defmacro log-m [method msg & args]
@@ -136,35 +158,37 @@
       (log-e ~method e# msg#)))
   ([method e msg]
    (if (resolve '⠇⠕⠶⠻)
-     `(let [e#     (coerce-throwable ~e)
-            e-ctx# (ex-data e#)]
-        (if e-ctx#
-          (. ~'⠇⠕⠶⠻
-             (~method
-               (ctx-marker e-ctx#)
-               ~(coerce-string msg)
-               e#))
-          (. ~'⠇⠕⠶⠻
-             (~method
-               ~(coerce-string msg)
-               e#))))
+     `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+        (let [e#     (coerce-throwable ~e)
+              e-ctx# (ex-data e#)]
+          (if e-ctx#
+            (. ~'⠇⠕⠶⠻
+               (~method
+                 (ctx-marker e-ctx#)
+                 ~(coerce-string msg)
+                 e#))
+            (. ~'⠇⠕⠶⠻
+               (~method
+                 ~(coerce-string msg)
+                 e#)))))
      (throw (IllegalStateException. "(deflogger) has not been called"))))
   ([method e ctx msg]
    (if (resolve '⠇⠕⠶⠻)
-     `(let [e#     (coerce-throwable ~e)
-            e-ctx# (ex-data e#)
-            ctx#   ~ctx]
-        (if e-ctx#
-          (. ~'⠇⠕⠶⠻
-             (~method
-               (ctx-marker (into e-ctx# ctx#))
-               ~(coerce-string msg)
-               ^Throwable e#))
-          (. ~'⠇⠕⠶⠻
-             (~method
-               (ctx-marker ctx#)
-               ~(coerce-string msg)
-               ^Throwable e#))))
+     `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+        (let [e#     (coerce-throwable ~e)
+              e-ctx# (ex-data e#)
+              ctx#   ~ctx]
+          (if e-ctx#
+            (. ~'⠇⠕⠶⠻
+               (~method
+                 (ctx-marker (into e-ctx# ctx#))
+                 ~(coerce-string msg)
+                 ^Throwable e#))
+            (. ~'⠇⠕⠶⠻
+               (~method
+                 (ctx-marker ctx#)
+                 ~(coerce-string msg)
+                 ^Throwable e#)))))
      (throw (IllegalStateException. "(deflogger) has not been called")))))
 
 (defmacro spy

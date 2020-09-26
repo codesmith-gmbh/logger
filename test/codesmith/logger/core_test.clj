@@ -10,6 +10,13 @@
 (deftest proper-meta
   (is (= Logger (:tag (meta #'⠇⠕⠶⠻)))))
 
+(deftest level-pred-test
+  (is (= 'isTraceEnabled (log/level-pred 'trace)))
+  (is (= 'isDebugEnabled (log/level-pred 'debug)))
+  (is (= 'isInfoEnabled (log/level-pred 'info)))
+  (is (= 'isWarnEnabled (log/level-pred 'warn)))
+  (is (= 'isErrorEnabled (log/level-pred 'error))))
+
 (deftest trace-logs
   (is (not (log/trace-c {})))
   (is (not (log/trace-c {} "hello")))
@@ -90,7 +97,12 @@
   (is (not (log/error-e (ex-info "hello" {}) "hello 1 ")))
   (is (not (log/error-e (ex-info "hello" {}) {} "hello 2"))))
 
+(deftest throwable-coercion
+  (is (not (log/error-e "hello"))))
 
 (deftest encode-markers
   (is (not (log/info-c {:username "stan" :special {:a 1}})))
   (is (not (log/info-c {:username "stan" :special {:a +}}))))
+
+(deftest spy-test
+  (is (= 1 (log/spy :info (+ 1 0)))))

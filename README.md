@@ -64,7 +64,7 @@ The macro `info-m` is used for message formatting without context.
 ```
 
 The macro `info-e` is used to log errors (Throwables). The macro comes with 3 variants: error only;
-error and message; error, message and context. In the first case, the message from the error
+error and message; error, context and message. In the first case, the message from the error
 is used as message via `Throwable#getMessage()` and the result of `ex-data` is used as context. The second case
 works similarly to the first with the given message used instead of the exception message. The third
 case works similarly to the second with the given context merge with the result of `ex-data`. 

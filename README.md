@@ -4,15 +4,10 @@
 {codesmith/logger {:mvn/version "RELEASE"}}
 ```
 
-A logback/logstash appender clojure wrapper
-
-## Motivation
-
-The motivation for the `codesmith/logger` library is to use the
-[Logstash Logback Encoder](https://github.com/logstash/logstash-logback-encoder) in Clojure projects.
-The Logstash Logback Encoder is an encoder for [Logback](http://logback.qos.ch) that emits a Logstash
-compatible JSON string for every logging events. The library consists of a thin macro
-layer on top of [Slf4j](http://www.slf4j.org).
+The `codesmith/logger` library is thin macro layer on top of [Slf4j](http://www.slf4j.org).
+It simplifies the usage of the [Logstash Logback Encoder](https://github.com/logstash/logstash-logback-encoder)
+in Clojure projects. The Logstash Logback Encoder is an encoder for [Logback](http://logback.qos.ch)
+that emits a Logstash compatible JSON string for every logging events.
 
 ## Usage
 

@@ -1,8 +1,7 @@
 (ns ^{:author "Stanislas Nanchen"
       :doc    "Codesmith Logger is a simple wrapper on logback (slf4j) and net.logstash.logback.
-
-               To use the library, it is necessary to call the macro `deflogger`
-               before any logging macro is called."}
+               To use the library, it is necessary to call the macro `deflogger` before any logging
+               macro is called."}
   codesmith.logger.core
   (:require [cheshire.core]
             [clojure.pprint :as pp]
@@ -10,81 +9,79 @@
             [cheshire.core :as json])
   (:import [org.slf4j LoggerFactory Logger Marker]
            [net.logstash.logback.marker RawJsonAppendingMarker]
-           [clojure.lang IDeref]))
+           [clojure.lang RT]))
 
 ;; # Configuration
 
 (def default-context-logging-key "context")
 
-(def context-logging-key default-context-logging-key)
+(def context-logging-key
+  "The key under which the [[log-c]] and [[log-e]] macros put the context in the logstash JSON.
+  By default, it is \"context\"."
+  default-context-logging-key)
 
-(defn set-context-logging-key! [logging-key]
+(defn set-context-logging-key!
+  "Configuration function to set the [[context-logging-key]]."
+  [logging-key]
   (alter-var-root #'context-logging-key (constantly logging-key)))
 
-(defn default-context-pre-logging-transformation [ctx]
-  (persistent!
-    (reduce-kv
-      (fn [acc k v]
-        (assoc! acc k (if (instance? IDeref v)
-                        @v
-                        v)))
-      (transient {})
-      ctx)))
+(def default-context-pre-logging-transformation identity)
 
-(def context-pre-logging-transformation default-context-pre-logging-transformation)
+(def context-pre-logging-transformation
+  "A transformation function that is applied to the context before logging.
+  By default, it is the identity (no transformation)."
+  default-context-pre-logging-transformation)
 
-(defn set-context-pre-logging-transformation! [tranformation]
+(defn set-context-pre-logging-transformation!
+  "Configuration function to set the [[context-pre-logging-transformation]]"
+  [tranformation]
   (alter-var-root #'context-pre-logging-transformation (constantly tranformation)))
 
 ;; # Logger definition
 
-;; Install a var called `⠇⠕⠶⠻` in the namespace from which it is called.
-;; The name is logger in braille-2 notation."
-(defmacro deflogger []
+(defmacro deflogger
+  "Creates a var named `⠇⠕⠶⠻` in the current namespace `*ns*` to contain a [[org.slf4j.Logger]]
+  The name is \"logger\" written in braille-2 notation."
+  []
   `(defonce ~(vary-meta '⠇⠕⠶⠻ assoc :tag Logger) (LoggerFactory/getLogger ~(.toString *ns*))))
-
-;; # Logging macros
-;;
-;; In general, you should use the `info`, `warn`, etc variants 
-;; as the `log` macros are considered low-level.
-;;
-;; For each log level, we have 3 macros with slight different arities and behavior:
-;; 1. suffix `-c`:  3 arities
-;;    i.   1 arg -> expects an exception created with `ex-info` and will use the data as context.
-;;    ii.  2 args -> expects an exception created with `ex-info` and will use the data as context.
-;;    iii. n args -> ctx, msg and arg : e is exception, if raise with `ex-info`, 
-;;                   contributes to the ctx; msg with formatting
-;; 2. suffix `-m`: formatting of message no context
-;; 3. suffix `-e`: for exceptions with and without ctx works best with an exception 
-;;                 created with `ex-info` : it will use the data as context.
-;;
-;; The spy macro allows to log a value being evaluated (as well as the original expression) 
-;; and return the evaluated value. The first argument is the keyword of the level 
-;; (:info, :warn, etc...)
 
 (deflogger)
 
-(defn coerce-string [arg]
+;; # Logging macros
+
+(defmacro coerce-string
+  "Coerce, at compile time, the argument to be a String."
+  [arg]
   (if (instance? String arg)
     arg
     `(str ~arg)))
 
-(defn coerce-object [arg]
-  (if (some #(instance? % arg) [Long Double Integer])
-    `(identity ~arg)
-    arg))
+(defmacro box [arg]
+  "Ensures at compile time that the argument is an Object.
+  This macro is necessary to avoid reflection warning from numeric constants that are emitted unboxed by the compiler."
+  `(RT/box ~arg))
 
-(defn coerce-throwable ^Throwable [e]
+(defmacro compile-to-array [& args]
+  "Compile code to create a java array with the given arguments"
+  (let [assignments (map-indexed (fn [i arg]
+                                   `(aset ~i (box ~arg)))
+                                 args)]
+    `(doto (object-array ~(count args))
+       ~@assignments)))
+
+(defn ensure-throwable ^Throwable [e]
+  "Ensures, at runtime, that the argument is a throwable.
+  If the argument is not throwable, its string representation is embedded in an `ex-info`."
   (if (instance? Throwable e)
     e
     (let [e-str (str e)]
       (.warn ⠇⠕⠶⠻ "Value {} is not a throwable; wrapping in ex-info" e-str)
       (ex-info e-str {}))))
 
-(defn ^"[Ljava.lang.Object;" into-object-array [& args]
-  (into-array Object args))
-
 (defn ^Marker ctx-marker [ctx]
+  "Creates a [[RawJsonAppendingMarker]] to include `ctx` in the JSON map produced by the logstash encoder.
+  This function attempts first to transform `ctx` in JSON with cheshire; if it fails, it is transformed
+  as JSON string with [[pr-str]]."
   (let [ctx   (context-pre-logging-transformation ctx)
         value (try
                 (json/generate-string ctx)
@@ -94,6 +91,7 @@
     (RawJsonAppendingMarker. context-logging-key value)))
 
 (defn level-pred [method]
+  "For the given `method` symbol, compute the corresponding `isXXXEnabled` method symbol."
   (let [method-name (name method)]
     (symbol
       (str
@@ -103,9 +101,15 @@
         "Enabled"))))
 
 (defn throw-logger-missing-exception []
+  "Throw an [[IllegalStateException]] to signal that the `deflogger` macro has not been called properly."
   (throw (IllegalStateException. (str "(deflogger) has not been called in current namespace `" *ns* "`"))))
 
 (defmacro log-c
+  "Logging macro to output the context map `ctx` in the JSON string generated by the logstash encoder.
+  Variants allow to pass a message as slf4j format string with n arguments.
+  The argument `method` is the symbol of the log method to call on the [[Logger]] object. Typically,
+  the level macros (`trace-c`, `debug-c`, etc.) are used instead of this macro.
+  The macro generates code that verifies that the corresponding log level is enabled."
   ([method ctx]
    (if (resolve '⠇⠕⠶⠻)
      `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
@@ -118,7 +122,7 @@
         (. ~'⠇⠕⠶⠻
            (~method
              (ctx-marker ~ctx)
-             ~(coerce-string msg))))
+             (coerce-string ~msg))))
      (throw-logger-missing-exception)))
   ([method ctx msg & args]
    (if (resolve '⠇⠕⠶⠻)
@@ -127,29 +131,34 @@
             (. ~'⠇⠕⠶⠻
                (~method
                  (ctx-marker ~ctx)
-                 ~(coerce-string msg))))
+                 (coerce-string ~msg))))
        1 `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
             (. ~'⠇⠕⠶⠻
                (~method
                  (ctx-marker ~ctx)
-                 ~(coerce-string msg)
-                 ~(coerce-object (first args)))))
+                 (coerce-string ~msg)
+                 (box ~(first args)))))
        2 `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
             (. ~'⠇⠕⠶⠻
                (~method
                  (ctx-marker ~ctx)
-                 ~(coerce-string msg)
-                 ~(coerce-object (first args))
-                 ~(coerce-object (second args)))))
+                 (coerce-string ~msg)
+                 (box ~(first args))
+                 (box ~(second args)))))
        `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
           (. ~'⠇⠕⠶⠻
              (~method
                (ctx-marker ~ctx)
-               ~(coerce-string msg)
-               (into-object-array ~@args)))))
+               (coerce-string ~msg)
+               (compile-to-array ~@args)))))
      (throw-logger-missing-exception))))
 
 (defmacro log-m [method msg & args]
+  "Logging macro for a simple logging message `msg`.
+  Variants allow to pass a message as slf4j format string with n arguments.
+  The argument `method` is the symbol of the log method to call on the [[Logger]] object. Typically,
+  the level macros (`trace-m`, `debug-m`, etc.) are used instead of this macro.
+  The macro generates code that verifies that the corresponding log level is enabled."
   (if (resolve '⠇⠕⠶⠻)
     (case (count args)
       0 `(. ~'⠇⠕⠶⠻
@@ -157,76 +166,68 @@
               ~msg))
       1 `(. ~'⠇⠕⠶⠻
             (~method
-              ~(coerce-string msg)
-              ~(coerce-object (first args))))
+              (coerce-string ~msg)
+              (box ~(first args))))
       2 `(. ~'⠇⠕⠶⠻
             (~method
-              ~(coerce-string msg)
-              ~(coerce-object (first args))
-              ~(coerce-object (second args))))
+              (coerce-string ~msg)
+              (box ~(first args))
+              (box ~(second args))))
       `(. ~'⠇⠕⠶⠻
           (~method
-            ~(coerce-string msg)
-            (into-object-array ~@args))))
+            (coerce-string ~msg)
+            (compile-to-array ~@args))))
     (throw-logger-missing-exception)))
 
 (defmacro log-e
+  "Logging macro for logging a [[Throwable]] using the dedicated logging methods for errors.
+  Variants allow to pass an explicit message `msg` and an explicit context `ctx`. If no `msg` is
+  provided, the message of the [[Throwable]] is use instead. If no context is provided, we use
+  `ex-data` to obtain a context. If a context is provided, it is merged with `ex-data`.
+  The argument `method` is the symbol of the log method to call on the [[Logger]] object. Typically,
+  the level macros (`trace-e`, `debug-e`, etc.) are used instead of this macro.
+  The macro generates code that verifies that the corresponding log level is enabled."
   ([method e]
-   `(let [e#   (coerce-throwable ~e)
+   `(let [e#   (ensure-throwable ~e)
           msg# (.getMessage e#)]
       (log-e ~method e# msg#)))
   ([method e msg]
    (if (resolve '⠇⠕⠶⠻)
      `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
-        (let [e#     (coerce-throwable ~e)
+        (let [e#     (ensure-throwable ~e)
               e-ctx# (ex-data e#)]
           (if e-ctx#
             (. ~'⠇⠕⠶⠻
                (~method
                  (ctx-marker e-ctx#)
-                 ~(coerce-string msg)
+                 (coerce-string ~msg)
                  e#))
             (. ~'⠇⠕⠶⠻
                (~method
-                 ~(coerce-string msg)
+                 (coerce-string ~msg)
                  e#)))))
      (throw-logger-missing-exception)))
   ([method e ctx msg]
    (if (resolve '⠇⠕⠶⠻)
      `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
-        (let [e#     (coerce-throwable ~e)
+        (let [e#     (ensure-throwable ~e)
               e-ctx# (ex-data e#)
               ctx#   ~ctx]
           (if e-ctx#
             (. ~'⠇⠕⠶⠻
                (~method
                  (ctx-marker (into e-ctx# ctx#))
-                 ~(coerce-string msg)
+                 (coerce-string ~msg)
                  ^Throwable e#))
             (. ~'⠇⠕⠶⠻
                (~method
                  (ctx-marker ctx#)
-                 ~(coerce-string msg)
+                 (coerce-string ~msg)
                  ^Throwable e#)))))
      (throw-logger-missing-exception))))
 
-(defmacro spy
-  ([val]
-   `(spy :debug ~val))
-  ([level val]
-   (let [method (symbol (name level))]
-     `(let [val# ~val]
-        (log-c ~method {:expression (delay
-                                      (str/trim (with-out-str
-                                                  (pp/with-pprint-dispatch
-                                                    pp/code-dispatch
-                                                    (pp/pprint '~val)))))
-                        :value      val#}
-               "spy")
-        val#))))
-
-
 (defmacro trace-c
+  "Uses `loc-c` on trace level."
   ([ctx]
    `(log-c ~'trace ~ctx))
   ([ctx msg]
@@ -235,9 +236,11 @@
    `(log-c ~'trace ~ctx ~msg ~@args)))
 
 (defmacro trace-m [msg & args]
+  "Uses `loc-m` on trace level."
   `(log-m ~'trace ~msg ~@args))
 
 (defmacro trace-e
+  "Uses `log-e` on trace level."
   ([e]
    `(log-e ~'trace ~e))
   ([e msg]
@@ -247,6 +250,7 @@
 
 
 (defmacro debug-c
+  "Uses `log-c` on debug level."
   ([ctx]
    `(log-c ~'debug ~ctx))
   ([ctx msg]
@@ -255,9 +259,11 @@
    `(log-c ~'debug ~ctx ~msg ~@args)))
 
 (defmacro debug-m [msg & args]
+  "Uses `log-m` on debug level."
   `(log-m ~'debug ~msg ~@args))
 
 (defmacro debug-e
+  "Uses `log-e` on debug level."
   ([e]
    `(log-e ~'debug ~e))
   ([e msg]
@@ -267,6 +273,7 @@
 
 
 (defmacro info-c
+  "Uses `log-c` on info level."
   ([ctx]
    `(log-c ~'info ~ctx))
   ([ctx msg]
@@ -275,9 +282,11 @@
    `(log-c ~'info ~ctx ~msg ~@args)))
 
 (defmacro info-m [msg & args]
+  "Uses `log-m` on info level."
   `(log-m ~'info ~msg ~@args))
 
 (defmacro info-e
+  "Uses `log-e` on info level."
   ([e]
    `(log-e ~'info ~e))
   ([e msg]
@@ -287,6 +296,7 @@
 
 
 (defmacro warn-c
+  "Uses `log-c` on warn level."
   ([ctx]
    `(log-c ~'warn ~ctx))
   ([ctx msg]
@@ -295,9 +305,11 @@
    `(log-c ~'warn ~ctx ~msg ~@args)))
 
 (defmacro warn-m [msg & args]
+  "Uses `log-m` on warn level."
   `(log-m ~'warn ~msg ~@args))
 
 (defmacro warn-e
+  "Uses `log-e` on warn level."
   ([e]
    `(log-e ~'warn ~e))
   ([e msg]
@@ -307,6 +319,7 @@
 
 
 (defmacro error-c
+  "Uses `log-c` on error level."
   ([ctx]
    `(log-c ~'error ~ctx))
   ([ctx msg]
@@ -315,12 +328,35 @@
    `(log-c ~'error ~ctx ~msg ~@args)))
 
 (defmacro error-m [msg & args]
+  "Uses `log-m` on error level."
   `(log-m ~'error ~msg ~@args))
 
 (defmacro error-e
+  "Uses `log-e` on error level."
   ([e]
    `(log-e ~'error ~e))
   ([e msg]
    `(log-e ~'error ~e ~msg))
   ([e ctx msg]
    `(log-e ~'error ~e ~ctx ~msg)))
+
+;; # Spy macro
+
+(defmacro spy
+  "A spy macro to log inspection of an expression.
+  It will log the value of the expression and the expression itself as context via `log-c`
+  with \"spy\" as message.
+  By default, it uses the debug level; the diadic version allows to specify the level as string,
+  keyword or symbol (e.g. `(spy :info (+ 1 2)) for info level."
+  ([expr]
+   `(spy :debug ~expr))
+  ([level expr]
+   (let [method (symbol (name level))]
+     `(let [val# ~expr]
+        (log-c ~method {:expression (str/trim (with-out-str
+                                                (pp/with-pprint-dispatch
+                                                  pp/code-dispatch
+                                                  (pp/pprint '~expr))))
+                        :value      val#}
+               "spy")
+        val#))))

@@ -86,13 +86,16 @@
         (subs method-name 1)
         "Enabled"))))
 
+(defn throw-logger-missing-exception []
+  (throw (IllegalStateException. (str "(deflogger) has not been called in current namespace `" *ns* "`"))))
+
 (defmacro log-c
   ([method ctx]
    (if (resolve '⠇⠕⠶⠻)
      `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
         (. ~'⠇⠕⠶⠻
            (~method (ctx-marker ~ctx) "")))
-     (throw (IllegalStateException. "(deflogger) has not been called"))))
+     (throw-logger-missing-exception)))
   ([method ctx msg]
    (if (resolve '⠇⠕⠶⠻)
      `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
@@ -100,7 +103,7 @@
            (~method
              (ctx-marker ~ctx)
              ~(coerce-string msg))))
-     (throw (IllegalStateException. "(deflogger) has not been called"))))
+     (throw-logger-missing-exception)))
   ([method ctx msg & args]
    (if (resolve '⠇⠕⠶⠻)
      (case (count args)
@@ -128,7 +131,7 @@
                (ctx-marker ~ctx)
                ~(coerce-string msg)
                (into-object-array ~@args)))))
-     (throw (IllegalStateException. "(deflogger) has not been called")))))
+     (throw-logger-missing-exception))))
 
 (defmacro log-m [method msg & args]
   (if (resolve '⠇⠕⠶⠻)
@@ -149,7 +152,7 @@
           (~method
             ~(coerce-string msg)
             (into-object-array ~@args))))
-    (throw (IllegalStateException. "(deflogger) has not been called"))))
+    (throw-logger-missing-exception)))
 
 (defmacro log-e
   ([method e]
@@ -171,7 +174,7 @@
                (~method
                  ~(coerce-string msg)
                  e#)))))
-     (throw (IllegalStateException. "(deflogger) has not been called"))))
+     (throw-logger-missing-exception)))
   ([method e ctx msg]
    (if (resolve '⠇⠕⠶⠻)
      `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
@@ -189,7 +192,7 @@
                  (ctx-marker ctx#)
                  ~(coerce-string msg)
                  ^Throwable e#)))))
-     (throw (IllegalStateException. "(deflogger) has not been called")))))
+     (throw-logger-missing-exception))))
 
 (defmacro spy
   ([val]

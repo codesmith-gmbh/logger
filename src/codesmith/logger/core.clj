@@ -61,20 +61,20 @@
 (defn ^"[Ljava.lang.Object;" into-object-array [& args]
   (into-array Object args))
 
-(defn ^Marker ctx-marker [m]
-  (let [defer-map (persistent!
-                    (reduce-kv
-                      (fn [acc k v]
-                        (assoc! acc k (if (instance? IDeref v)
-                                        @v
-                                        v)))
-                      (transient {})
-                      m))
-        value     (try
-                    (json/generate-string defer-map)
-                    (catch Exception e
-                      (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
-                      (json/generate-string (pr-str defer-map))))]
+(defn ^Marker ctx-marker [ctx]
+  (let [ctx   (persistent!
+                (reduce-kv
+                  (fn [acc k v]
+                    (assoc! acc k (if (instance? IDeref v)
+                                    @v
+                                    v)))
+                  (transient {})
+                  ctx))
+        value (try
+                (json/generate-string ctx)
+                (catch Exception e
+                  (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
+                  (json/generate-string (pr-str ctx))))]
     (RawJsonAppendingMarker. "context" value)))
 
 (defn level-pred [method]

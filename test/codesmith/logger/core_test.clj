@@ -12,19 +12,19 @@
 
 (deftest trace-logs
   (is (not (log/trace-c {})))
-  (is (not (log/trace-c {} (identity "hello"))))
-  (is (not (log/trace-c {} (identity "hello {}") 1)))
-  (is (not (log/trace-c {} (identity "hello {} {}") (+ 1 2) 3)))
-  (is (not (log/trace-c {} (identity "hello {} {} {}") (+ 1 2) 3 5)))
+  (is (not (log/trace-c {} "hello")))
+  (is (not (log/trace-c {} "hello {}" 1)))
+  (is (not (log/trace-c {} "hello {} {}" (+ 1 2) 3)))
+  (is (not (log/trace-c {} "hello {} {} {}" (+ 1 2) 3 5)))
 
-  (is (not (log/trace-m (identity "hello"))))
-  (is (not (log/trace-m (identity "hello {}") 1)))
-  (is (not (log/trace-m (identity "hello {} {}") 1 2)))
-  (is (not (log/trace-m (identity "hello {} {} {}") 1 2 3)))
+  (is (not (log/trace-m "hello")))
+  (is (not (log/trace-m "hello {}" 1)))
+  (is (not (log/trace-m "hello {} {}" 1 2)))
+  (is (not (log/trace-m "hello {} {} {}" 1 2 3)))
 
-  (is (not (log/trace-e (identity (ex-info "hello" {})))))
-  (is (not (log/trace-e (identity (ex-info "hello" {})) (identity "hello 1"))))
-  (is (not (log/trace-e (identity (ex-info "hello" {})) {} (identity "hello 2")))))
+  (is (not (log/trace-e (ex-info "hello" {}))))
+  (is (not (log/trace-e (ex-info "hello" {}) "hello 1")))
+  (is (not (log/trace-e (ex-info "hello" {}) {} "hello 2"))))
 
 (deftest debug-logs
   (is (not (log/debug-c {})))
@@ -89,3 +89,8 @@
   (is (not (log/error-e (ex-info "hello" {}))))
   (is (not (log/error-e (ex-info "hello" {}) "hello 1 ")))
   (is (not (log/error-e (ex-info "hello" {}) {} "hello 2"))))
+
+
+(deftest encode-markers
+  (is (not (log/info-c {:username "stan" :special {:a 1}})))
+  (is (not (log/info-c {:username "stan" :special {:a +}}))))

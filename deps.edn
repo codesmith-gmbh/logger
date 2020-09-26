@@ -1,0 +1,12 @@
+{:paths   ["src"]
+ :deps    {ch.qos.logback/logback-classic                {:mvn/version "1.2.3"}
+           ch.qos.logback/logback-core                   {:mvn/version "1.2.3"}
+           net.logstash.logback/logstash-logback-encoder {:mvn/version "6.4"}
+           cheshire/cheshire                             {:mvn/version "5.10.0"}}
+ :aliases {:dev      {:extra-paths ["resources"]
+                      :extra-deps  {org.clojure/clojure {:mvn/version "1.10.1"}}}
+           :test     {:extra-paths ["test"]}
+           :outdated {:extra-deps {antq/antq {:mvn/version "0.7.2"}}
+                      :main-opts  ["-m" "antq.core"]}
+           :jar      {:extra-deps {seancorfield/depstar {:mvn/version "1.1.117"}}}
+           :deploy   {:extra-deps {slipset/deps-deploy {:mvn/version "0.1.0"}}}}}

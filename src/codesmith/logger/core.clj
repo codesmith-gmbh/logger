@@ -2,15 +2,15 @@
       :doc    "Codesmith Logger is a simple wrapper on logback (slf4j) and net.logstash.logback.
 
                To use the library, it is necessary to call the macro `deflogger`
-               before any logging macro is called.
-
-               It has some utilities to manipulate the MDC
-               (`with`-style macro and ring middleware)."}
+               before any logging macro is called."}
   codesmith.logger.core
-  (:require [cheshire.core :as json]
+  (:require [cheshire.core]
             [clojure.pprint :as pp]
-            [clojure.string :as str])
-  (:import [org.slf4j LoggerFactory Logger]))
+            [clojure.string :as str]
+            [cheshire.core :as json])
+  (:import [org.slf4j LoggerFactory Logger Marker]
+           [net.logstash.logback.marker DeferredLogstashMarker RawJsonAppendingMarker]
+           [java.util.function Supplier]))
 
 ;; # Logger definition
 
@@ -38,35 +38,49 @@
 ;; and return the evaluated value. The first argument is the keyword of the level 
 ;; (:info, :warn, etc...)
 
+(deflogger)
+
 (defn coerce-string [arg]
   (if (instance? String arg)
     arg
-    `(Identity/string ~arg)))
+    `(str ~arg)))
 
 (defn coerce-object [arg]
   (if (some #(instance? % arg) [Long Double Integer])
-    `(Identity/identity ~arg)
+    `(identity ~arg)
     arg))
 
-(defmacro create-array [args]
-  (let [array-sym (gensym)]
-    `(let [~array-sym (Identity/makeArray ~(count args))]
-       ~@(map-indexed (fn [i arg]
-                        `(Identity/setArray ~array-sym ~i ~(coerce-object arg)))
-                      args)
-       ~array-sym)))
+(defn coerce-throwable ^Throwable [e]
+  (if (instance? Throwable e)
+    e
+    (ex-info (str e) {})))
+
+(defn ^"[Ljava.lang.Object;" into-object-array [& args]
+  (into-array Object args))
+
+(defn ^Marker ctx-marker [m]
+  (DeferredLogstashMarker.
+    (reify
+      Supplier
+      (get [this]
+        (let [value (try
+                      (json/generate-string m)
+                      (catch Exception e
+                        (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
+                        (json/generate-string (pr-str m))))]
+          (RawJsonAppendingMarker. "context" value))))))
 
 (defmacro log-c
   ([method ctx]
    (if (resolve '⠇⠕⠶⠻)
      `(. ~'⠇⠕⠶⠻
-         (~method (ClojureMapMarker. ~ctx) ""))
+         (~method (ctx-marker ~ctx) ""))
      (throw (IllegalStateException. "(deflogger) has not been called"))))
   ([method ctx msg]
    (if (resolve '⠇⠕⠶⠻)
      `(. ~'⠇⠕⠶⠻
          (~method
-           (ClojureMapMarker. ~ctx)
+           (ctx-marker ~ctx)
            ~(coerce-string msg)))
      (throw (IllegalStateException. "(deflogger) has not been called"))))
   ([method ctx msg & args]
@@ -74,24 +88,24 @@
      (case (count args)
        0 `(. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. ~ctx)
+               (ctx-marker ~ctx)
                ~(coerce-string msg)))
        1 `(. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. ~ctx)
+               (ctx-marker ~ctx)
                ~(coerce-string msg)
                ~(coerce-object (first args))))
        2 `(. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. ~ctx)
+               (ctx-marker ~ctx)
                ~(coerce-string msg)
                ~(coerce-object (first args))
                ~(coerce-object (second args))))
        `(. ~'⠇⠕⠶⠻
            (~method
-             (ClojureMapMarker. ~ctx)
+             (ctx-marker ~ctx)
              ~(coerce-string msg)
-             (create-array ~args))))
+             (into-object-array ~@args))))
      (throw (IllegalStateException. "(deflogger) has not been called")))))
 
 (defmacro log-m [method msg & args]
@@ -112,22 +126,22 @@
       `(. ~'⠇⠕⠶⠻
           (~method
             ~(coerce-string msg)
-            (create-array ~args))))
+            (into-object-array ~@args))))
     (throw (IllegalStateException. "(deflogger) has not been called"))))
 
 (defmacro log-e
   ([method e]
-   `(let [e#   (Identity/throwable ~e)
+   `(let [e#   (coerce-throwable ~e)
           msg# (.getMessage e#)]
       (log-e ~method e# msg#)))
   ([method e msg]
    (if (resolve '⠇⠕⠶⠻)
-     `(let [e#     (Identity/throwable ~e)
+     `(let [e#     (coerce-throwable ~e)
             e-ctx# (ex-data e#)]
         (if e-ctx#
           (. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. e-ctx#)
+               (ctx-marker e-ctx#)
                ~(coerce-string msg)
                e#))
           (. ~'⠇⠕⠶⠻
@@ -137,18 +151,18 @@
      (throw (IllegalStateException. "(deflogger) has not been called"))))
   ([method e ctx msg]
    (if (resolve '⠇⠕⠶⠻)
-     `(let [e#     (Identity/throwable ~e)
+     `(let [e#     (coerce-throwable ~e)
             e-ctx# (ex-data e#)
             ctx#   ~ctx]
         (if e-ctx#
           (. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. (into e-ctx# ctx#))
+               (ctx-marker (into e-ctx# ctx#))
                ~(coerce-string msg)
                ^Throwable e#))
           (. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. ctx#)
+               (ctx-marker ctx#)
                ~(coerce-string msg)
                ^Throwable e#))))
      (throw (IllegalStateException. "(deflogger) has not been called")))))

@@ -1,3 +1,8 @@
 /.idea
 /logger.iml
 /.cpcache
+/target
+/.nrepl-port
+/.lein-failures
+/test2junit/
+/build.xml

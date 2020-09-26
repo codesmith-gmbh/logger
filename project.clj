@@ -8,7 +8,9 @@
 
                  [net.logstash.logback/logstash-logback-encoder "6.4"]
 
-                 [cheshire "5.10.0"]]
+                 [cheshire "5.10.0"]
+                 [com.fasterxml.jackson.core/jackson-core "2.11.2"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.11.2"]]
   :java-source-paths ["java"]
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.10.1"]]}}
   :plugins [[org.clojars.cvillecsteele/lein-git-version "1.2.7"]

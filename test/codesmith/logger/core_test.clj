@@ -89,3 +89,8 @@
   (is (not (log/error-e (ex-info "hello" {}))))
   (is (not (log/error-e (ex-info "hello" {}) "hello 1 ")))
   (is (not (log/error-e (ex-info "hello" {}) {} "hello 2"))))
+
+
+(deftest encode-markers
+  (is (not (log/info-c {:username "stan" :special {:a 1}})))
+  (is (not (log/info-c {:username "stan" :special {:a +}}))))

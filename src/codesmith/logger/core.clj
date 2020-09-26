@@ -6,9 +6,11 @@
   codesmith.logger.core
   (:require [cheshire.core]
             [clojure.pprint :as pp]
-            [clojure.string :as str])
-  (:import [org.slf4j LoggerFactory Logger]
-           [codesmith.logger ClojureMapMarker]))
+            [clojure.string :as str]
+            [cheshire.core :as json])
+  (:import [org.slf4j LoggerFactory Logger Marker]
+           [net.logstash.logback.marker DeferredLogstashMarker RawJsonAppendingMarker]
+           [java.util.function Supplier]))
 
 ;; # Logger definition
 
@@ -36,6 +38,8 @@
 ;; and return the evaluated value. The first argument is the keyword of the level 
 ;; (:info, :warn, etc...)
 
+(deflogger)
+
 (defn coerce-string [arg]
   (if (instance? String arg)
     arg
@@ -54,17 +58,29 @@
 (defn ^"[Ljava.lang.Object;" into-object-array [& args]
   (into-array Object args))
 
+(defn ^Marker ctx-marker [m]
+  (DeferredLogstashMarker.
+    (reify
+      Supplier
+      (get [this]
+        (let [value (try
+                      (json/generate-string m)
+                      (catch Exception e
+                        (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
+                        (json/generate-string (pr-str m))))]
+          (RawJsonAppendingMarker. "context" value))))))
+
 (defmacro log-c
   ([method ctx]
    (if (resolve '⠇⠕⠶⠻)
      `(. ~'⠇⠕⠶⠻
-         (~method (ClojureMapMarker. ~ctx) ""))
+         (~method (ctx-marker ~ctx) ""))
      (throw (IllegalStateException. "(deflogger) has not been called"))))
   ([method ctx msg]
    (if (resolve '⠇⠕⠶⠻)
      `(. ~'⠇⠕⠶⠻
          (~method
-           (ClojureMapMarker. ~ctx)
+           (ctx-marker ~ctx)
            ~(coerce-string msg)))
      (throw (IllegalStateException. "(deflogger) has not been called"))))
   ([method ctx msg & args]
@@ -72,22 +88,22 @@
      (case (count args)
        0 `(. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. ~ctx)
+               (ctx-marker ~ctx)
                ~(coerce-string msg)))
        1 `(. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. ~ctx)
+               (ctx-marker ~ctx)
                ~(coerce-string msg)
                ~(coerce-object (first args))))
        2 `(. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. ~ctx)
+               (ctx-marker ~ctx)
                ~(coerce-string msg)
                ~(coerce-object (first args))
                ~(coerce-object (second args))))
        `(. ~'⠇⠕⠶⠻
            (~method
-             (ClojureMapMarker. ~ctx)
+             (ctx-marker ~ctx)
              ~(coerce-string msg)
              (into-object-array ~@args))))
      (throw (IllegalStateException. "(deflogger) has not been called")))))
@@ -125,7 +141,7 @@
         (if e-ctx#
           (. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. e-ctx#)
+               (ctx-marker e-ctx#)
                ~(coerce-string msg)
                e#))
           (. ~'⠇⠕⠶⠻
@@ -141,12 +157,12 @@
         (if e-ctx#
           (. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. (into e-ctx# ctx#))
+               (ctx-marker (into e-ctx# ctx#))
                ~(coerce-string msg)
                ^Throwable e#))
           (. ~'⠇⠕⠶⠻
              (~method
-               (ClojureMapMarker. ctx#)
+               (ctx-marker ctx#)
                ~(coerce-string msg)
                ^Throwable e#))))
      (throw (IllegalStateException. "(deflogger) has not been called")))))

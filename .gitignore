@@ -4,3 +4,5 @@
 /target
 /.nrepl-port
 /.lein-failures
+/test2junit/
+/build.xml

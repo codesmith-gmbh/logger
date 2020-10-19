@@ -1,22 +1,20 @@
-(ns ^{:author "Stanislas Nanchen"
-      :doc    "Codesmith Logger is a simple wrapper on logback (slf4j) and net.logstash.logback.
-               To use the library, it is necessary to call the macro `deflogger` before any logging
-               macro is called."}
-  codesmith.logger.core
-  (:require [cheshire.core]
+(ns codesmith.logger
+  (:require [clojure.string :as str]
             [clojure.pprint :as pp]
-            [clojure.string :as str]
             [cheshire.core :as json])
-  (:import [org.slf4j LoggerFactory Logger Marker]
-           [net.logstash.logback.marker RawJsonAppendingMarker]
-           [clojure.lang RT]))
+  (:refer-clojure :exclude [assoc])
+  (:import [org.slf4j LoggerFactory Logger]
+           [net.logstash.logback.argument StructuredArguments]
+           [clojure.lang RT]
+           [java.util Collection]
+           [net.logstash.logback.marker RawJsonAppendingMarker Markers]))
 
 ;; # Configuration
 
 (def default-context-logging-key "context")
 
 (def context-logging-key
-  "The key under which the [[log-c]] and [[log-e]] macros put the context in the logstash JSON.
+  "The key under which the [[log-c]], [[log-m]] and [[log-e]] macros put the context in the logstash JSON.
   By default, it is \"context\"."
   default-context-logging-key)
 
@@ -24,6 +22,18 @@
   "Configuration function to set the [[context-logging-key]]."
   [logging-key]
   (alter-var-root #'context-logging-key (constantly logging-key)))
+
+(def default-ex-data-logging-key "exdata")
+
+(def ex-data-logging-key
+  "The key under with the [[log-e]] macros put the `ex-data` from an exception in the logstash JSON.
+  By default, it is \"exdata\"."
+  default-ex-data-logging-key)
+
+(defn set-ex-data-logging-key!
+  "Configuration function to set the [[ex-data-logging-key]]."
+  [logging-key]
+  (alter-var-root #'ex-data-logging-key (constantly logging-key)))
 
 (def default-context-pre-logging-transformation identity)
 
@@ -43,11 +53,18 @@
   "Creates a var named `⠇⠕⠶⠻` in the current namespace `*ns*` to contain a [[org.slf4j.Logger]]
   The name is \"logger\" written in braille-2 notation."
   []
-  `(defonce ~(vary-meta '⠇⠕⠶⠻ assoc :tag Logger) (LoggerFactory/getLogger ~(.toString *ns*))))
+  `(defonce ~(vary-meta '⠇⠕⠶⠻ clojure.core/assoc :tag Logger) (LoggerFactory/getLogger ~(.toString *ns*))))
 
 (deflogger)
 
-;; # Logging macros
+;; # Utility functions and macros.
+
+(defn raw-json [value]
+  (try
+    (json/generate-string value)
+    (catch Exception e
+      (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
+      (json/generate-string (pr-str value)))))
 
 (defmacro coerce-string
   "Coerce, at compile time, the argument to be a String."
@@ -60,6 +77,20 @@
   "Ensures at compile time that the argument is an Object.
   This macro is necessary to avoid reflection warning from numeric constants that are emitted unboxed by the compiler."
   `(RT/box ~arg))
+
+(defn kv [k v]
+  (StructuredArguments/raw
+    (name k)
+    (raw-json v)))
+
+(defmacro compile-to-struct-args [& args]
+  "Compile code to create a java array with the given arguments"
+  (let [struct-args (partition 2 args)
+        assignments (map-indexed (fn [i [k v]]
+                                   `(aset ~i (kv ~k ~v)))
+                                 struct-args)]
+    `(doto (object-array ~(count struct-args))
+       ~@assignments)))
 
 (defmacro compile-to-array [& args]
   "Compile code to create a java array with the given arguments"
@@ -78,18 +109,6 @@
       (.warn ⠇⠕⠶⠻ "Value {} is not a throwable; wrapping in ex-info" e-str)
       (ex-info e-str {}))))
 
-(defn ^Marker ctx-marker [ctx]
-  "Creates a [[RawJsonAppendingMarker]] to include `ctx` in the JSON map produced by the logstash encoder.
-  This function attempts first to transform `ctx` in JSON with cheshire; if it fails, it is transformed
-  as JSON string with [[pr-str]]."
-  (let [ctx   (context-pre-logging-transformation ctx)
-        value (try
-                (json/generate-string ctx)
-                (catch Exception e
-                  (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
-                  (json/generate-string (pr-str ctx))))]
-    (RawJsonAppendingMarker. context-logging-key value)))
-
 (defn level-pred [method]
   "For the given `method` symbol, compute the corresponding `isXXXEnabled` method symbol."
   (let [method-name (name method)]
@@ -103,6 +122,54 @@
 (defn throw-logger-missing-exception []
   "Throw an [[IllegalStateException]] to signal that the `deflogger` macro has not been called properly."
   (throw (IllegalStateException. (str "(deflogger) has not been called in current namespace `" *ns* "`"))))
+
+;; # Context and Marker
+
+(defn aggregate-markers ^org.slf4j.Marker [^Collection args]
+  (Markers/aggregate args))
+
+(defprotocol ToContextMarker
+  (marker ^org.slf4j.Marker [self logging-key])
+  (ctx-marker ^org.slf4j.Marker [self]))
+
+(extend-type nil
+  ToContextMarker
+  (marker [_ _]
+    (Markers/empty))
+  (ctx-marker [_]
+    (Markers/empty)))
+
+(extend-type Object
+  ToContextMarker
+  (marker [self logging-key]
+    "Creates a [[RawJsonAppendingMarker]] to include `ctx` in the JSON map produced by the logstash encoder.
+  This function attempts first to transform `ctx` in JSON with cheshire; if it fails, it is transformed
+  as JSON string with [[pr-str]]."
+    (let [ctx   (context-pre-logging-transformation self)
+          value (raw-json ctx)]
+      (RawJsonAppendingMarker. logging-key value)))
+  (ctx-marker [self]
+    (marker self context-logging-key)))
+
+(defrecord Context [^org.slf4j.Marker mrkr ctx]
+  ToContextMarker
+  (marker [_ logging-key]
+    (if (= logging-key context-logging-key)
+      mrkr
+      (marker ctx logging-key)))
+  (ctx-marker [_] mrkr))
+
+(defn ctx [m]
+  (->Context (ctx-marker m) m))
+
+(defn assoc
+  ([{:keys [m]} k v]
+   (ctx (clojure.core/assoc m k v)))
+  ([{:keys [m]} k v & kvs]
+   (ctx (apply clojure.core/assoc m k v kvs))))
+
+
+;; # Logging macros
 
 (defmacro log-c
   "Logging macro to output the context map `ctx` in the JSON string generated by the logstash encoder.
@@ -124,33 +191,37 @@
              (ctx-marker ~ctx)
              (coerce-string ~msg))))
      (throw-logger-missing-exception)))
-  ([method ctx msg & args]
+  ([method ctx msg & struct-args]
+   (when (odd? (count struct-args))
+     (throw (IllegalArgumentException. "log-c expects even of arguments after the message (key value pairs), found odd number")))
    (if (resolve '⠇⠕⠶⠻)
-     (case (count args)
+     (case (count struct-args)
        0 `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
             (. ~'⠇⠕⠶⠻
                (~method
                  (ctx-marker ~ctx)
                  (coerce-string ~msg))))
-       1 `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
-            (. ~'⠇⠕⠶⠻
-               (~method
-                 (ctx-marker ~ctx)
-                 (coerce-string ~msg)
-                 (box ~(first args)))))
-       2 `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
-            (. ~'⠇⠕⠶⠻
-               (~method
-                 (ctx-marker ~ctx)
-                 (coerce-string ~msg)
-                 (box ~(first args))
-                 (box ~(second args)))))
+       2 (let [[k v] struct-args]
+           `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+              (. ~'⠇⠕⠶⠻
+                 (~method
+                   (ctx-marker ~ctx)
+                   (coerce-string ~msg)
+                   (kv ~k ~v)))))
+       4 (let [[k1 v1 k2 v2] struct-args]
+           `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
+              (. ~'⠇⠕⠶⠻
+                 (~method
+                   (ctx-marker ~ctx)
+                   (coerce-string ~msg)
+                   (kv ~k1 ~v1)
+                   (kv ~k2 ~v2)))))
        `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
           (. ~'⠇⠕⠶⠻
              (~method
                (ctx-marker ~ctx)
                (coerce-string ~msg)
-               (compile-to-array ~@args)))))
+               (compile-to-struct-args ~@struct-args)))))
      (throw-logger-missing-exception))))
 
 (defmacro log-m [method msg & args]
@@ -181,49 +252,28 @@
 
 (defmacro log-e
   "Logging macro for logging a [[Throwable]] using the dedicated logging methods for errors.
-  Variants allow to pass an explicit message `msg` and an explicit context `ctx`. If no `msg` is
-  provided, the message of the [[Throwable]] is use instead. If no context is provided, we use
-  `ex-data` to obtain a context. If a context is provided, it is merged with `ex-data`.
+  Variants allow to pass a context `ctx` and an explicit message `msg`. If no `msg` is
+  provided, the message of the [[Throwable]] is use instead. If `ex-data` of the exception is defined,
+  it is included as a Marker under the key [[ex-data-logging-key]].
   The argument `method` is the symbol of the log method to call on the [[Logger]] object. Typically,
   the level macros (`trace-e`, `debug-e`, etc.) are used instead of this macro.
   The macro generates code that verifies that the corresponding log level is enabled."
   ([method e]
-   `(let [e#   (ensure-throwable ~e)
-          msg# (.getMessage e#)]
-      (log-e ~method e# msg#)))
-  ([method e msg]
-   (if (resolve '⠇⠕⠶⠻)
-     `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
-        (let [e#     (ensure-throwable ~e)
-              e-ctx# (ex-data e#)]
-          (if e-ctx#
-            (. ~'⠇⠕⠶⠻
-               (~method
-                 (ctx-marker e-ctx#)
-                 (coerce-string ~msg)
-                 e#))
-            (. ~'⠇⠕⠶⠻
-               (~method
-                 (coerce-string ~msg)
-                 e#)))))
-     (throw-logger-missing-exception)))
+   `(log-e ~method ~e nil nil))
+  ([method e ctx]
+   `(log-e ~method ~e ~ctx nil))
   ([method e ctx msg]
    (if (resolve '⠇⠕⠶⠻)
      `(if (. ~'⠇⠕⠶⠻ ~(level-pred method))
-        (let [e#     (ensure-throwable ~e)
-              e-ctx# (ex-data e#)
-              ctx#   ~ctx]
-          (if e-ctx#
-            (. ~'⠇⠕⠶⠻
-               (~method
-                 (ctx-marker (into e-ctx# ctx#))
-                 (coerce-string ~msg)
-                 ^Throwable e#))
-            (. ~'⠇⠕⠶⠻
-               (~method
-                 (ctx-marker ctx#)
-                 (coerce-string ~msg)
-                 ^Throwable e#)))))
+        (let [e#            (ensure-throwable ~e)
+              e-ctx-marker# (marker (ex-data e#) ex-data-logging-key)
+              ctx-marker#   (ctx-marker ~ctx)
+              msg#          (or ~msg (.getMessage e#))]
+          (. ~'⠇⠕⠶⠻
+             (~method
+               (aggregate-markers [e-ctx-marker# ctx-marker#])
+               (coerce-string msg#)
+               ^Throwable e#))))
      (throw-logger-missing-exception))))
 
 (defmacro trace-c

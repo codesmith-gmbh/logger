@@ -4,15 +4,16 @@
            ch.qos.logback/logback-core                   {:mvn/version "1.2.3"}
            net.logstash.logback/logstash-logback-encoder {:mvn/version "6.4"}
            cheshire/cheshire                             {:mvn/version "5.10.0"}}
- :aliases {:dev      {:extra-paths ["resources"]}
+ :aliases {:dev      {:extra-paths ["resources", "dev"]
+                      :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
            :test     {:extra-paths ["test"]
                       :extra-deps  {org.clojure/test.check {:mvn/version "1.1.0"}}}
            :runner   {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.700"}}
                       :main-opts  ["-m" "kaocha.runner"]}
-           :outdated {:extra-deps {antq/antq {:mvn/version "0.7.2"}}
+           :outdated {:extra-deps {antq/antq {:mvn/version "0.7.5"}}
                       :main-opts  ["-m" "antq.core"]}
            :jar      {:extra-deps {seancorfield/depstar {:mvn/version "1.1.117"}}
                       :main-opts  ["-m" "hf.depstar.jar" "target/codesmith-logger.jar"]}
-           :deploy   {:extra-deps {slipset/deps-deploy {:mvn/version "0.1.0"}}
+           :deploy   {:extra-deps {slipset/deps-deploy {:mvn/version "0.1.1"}}
                       :main-opts  ["-m" "deps-deploy.deps-deploy" "deploy"
                                    "target/codesmith-logger.jar"]}}}

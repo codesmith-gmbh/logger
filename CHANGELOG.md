@@ -1,7 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## Unreleased
+## 0.3.1
+
+### Removed
+- Unused dependency on `org.clojure/tools.deps.alpha`
+
+## 0.3.0
 
 ### Added
 - BREAKING CHANGE: Support for StructuredArguments in the `log-c` macro.

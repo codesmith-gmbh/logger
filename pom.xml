@@ -46,11 +46,6 @@
             <version>6.4</version>
         </dependency>
         <dependency>
-            <groupId>org.clojure</groupId>
-            <artifactId>tools.deps.alpha</artifactId>
-            <version>0.9.782</version>
-        </dependency>
-        <dependency>
             <groupId>cheshire</groupId>
             <artifactId>cheshire</artifactId>
             <version>5.10.0</version>

@@ -160,9 +160,12 @@
   (ctx-marker [_] mrkr))
 
 (defn ctx [m]
+  "Wraps the supplied map in a record containing a prerendered Marker; this allows to use a
+  relatively static context without rerendering it as json on every log entry."
   (->Context (ctx-marker m) m))
 
 (defn assoc
+  "Assoc the given key/values a prerendered context."
   ([{:keys [m]} k v]
    (ctx (clojure.core/assoc m k v)))
   ([{:keys [m]} k v & kvs]

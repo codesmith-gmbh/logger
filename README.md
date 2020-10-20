@@ -5,7 +5,7 @@
 The `codesmith/logger` library is thin macro layer on top of [Slf4j](http://www.slf4j.org).
 It simplifies the usage of the [Logstash Logback Encoder](https://github.com/logstash/logstash-logback-encoder)
 in Clojure projects. The Logstash Logback Encoder is an encoder for [Logback](http://logback.qos.ch)
-that emits a Logstash compatible JSON string for every logging events. On one hand, we use the special
+that emits a Logstash compatible JSON string for every logging events. We use the special
 [Markers](https://github.com/logstash/logstash-logback-encoder/blob/master/src/main/java/net/logstash/logback/marker/Markers.java)
 to log contexts as well [StructuredArguments](https://github.com/logstash/logstash-logback-encoder/blob/master/src/main/java/net/logstash/logback/argument/StructuredArguments.java)
 to structure the log entries.
@@ -14,8 +14,10 @@ to structure the log entries.
 
 ### In Clojure
 
-The logging macros are in the namespace `codesmith.logger`. 
-The library requires a [Logger] instance in every namespace where the logging macros is used.
+The logging macros are in the namespace `codesmith.logger`.
+
+The library requires a [Logger](https://www.javadoc.io/doc/org.slf4j/slf4j-api/1.7.29/org/slf4j/Logger.html) instance
+in every namespace where the logging macros is used.
 This is accomplished by calling the macro `deflogger`, typically called at the top of the namespace file. The macro 
 creates a var in the namespace with the name `⠇⠕⠶⠻`. You must avoid creating a var with the same name.
 
@@ -25,12 +27,14 @@ creates a var in the namespace with the name `⠇⠕⠶⠻`. You must avoid crea
 
 (log/deflogger)
 
-;; The namespace can use the logging macros
+;; The logging macros can now be used in the example namespace.
 ``` 
 
 The logger macros come in three families: context/structured arguments (ending with `-c`), message (ending with `-m`)
 and error (ending with `-e`). Each family has a macro for one of the 5 log levels, with prefixes `trace`,
 `debug`, `info`, `warn` and `error`. We illustrate for the log level `info`; the others are similar.
+
+#### Macro `info-c`
 
 The macro `info-c` is used to transmit a context and structured argument to the log entry.
 With the `LogstashEncoder` (cf. below), the context is added under the key `"context"` in the emitted JSON.
@@ -50,8 +54,8 @@ that are passed as structured arguments.
 
 The `info-c` macro produces code that checks if the info log level is enabled and it guaranties that
 the json transformation happens exactly once. The json transformation is handled by the 
-library `cheshire`. If the context is not encodable by cheshire, the context is encoded via `pr-str`
-and emitted as string. The library logs a warning in that case.
+library `cheshire`. If the context or structured argument value is not encodable by cheshire,
+the context is encoded via `pr-str` and emitted as string. The library logs a warning in that case.
 
 ```clojure
 (log/info-c {:key +})
@@ -59,12 +63,16 @@ and emitted as string. The library logs a warning in that case.
 ;; {"@timestamp":"...","@version":"1","message":"","logger_name":"example","context":"{:key #object[clojure.core$_PLUS_ 0x7a5a9ca1 \"clojure.core$_PLUS_@7a5a9ca1\"]}"}
 ``` 
 
+#### Macro `info-m`
+
 The macro `info-m` is used for simple message formating. To have structured arguments, you must use the `log/kv` function.
 
 ```clojure
 (log/info-m "import message for {}, status {}" (log/kv :user "stan") 400)
 ;; {"@timestamp":"...","@version":"1","message":"import message for user=stan, status 400","logger_name":"example","user":"stan"...}
 ```
+
+#### Macro `info-e`
 
 The macro `info-e` is used to log errors (Throwables). The macro comes with 3 variants: error only;
 error and message; error, context and message. In the first case, the message from the error
@@ -102,6 +110,8 @@ that value with `ex-info`. The library logs a warning in that case.
 ;; {"@timestamp":"???","@version":"1","message":"important message","logger_name":"example",...,"stack_trace":"...","exdata":"{:key #object[clojure.core$_PLUS_ 0x7a5a9ca1 \"clojure.core$_PLUS_@7a5a9ca1\"]}"}
 ```
 
+#### Macro `spy`
+
 The library has also a `spy` macro to intercept and log an expression and its value. The monadic variant
 logs with the `debug` level. The dyadic variant takes the log level as first argument; the log level can
 be given as string, keyword or symbol.
@@ -112,7 +122,11 @@ be given as string, keyword or symbol.
 ;; 3
 ```
 
-Finally, the library has three functions to configure it: `set-context-logging-key!`, `set-ex-data-logging-key!` and
+### Configuration
+
+#### In Clojure
+
+The library has three functions to configure it: `set-context-logging-key!`, `set-ex-data-logging-key!` and
 `set-context-pre-logging-transformation!`. The functions `set-context-logging-key!` and `set-ex-data-logging-key!` take
 a string as argument. They configures the string that is used as a key to output the context and the exception data
 respectively in the JSON output of the Logstash appender. By default, they are `"context"` and `"exdata"` respectively.
@@ -121,7 +135,7 @@ The function `set-context-pre-logging-transformation!` takes a monadic function 
 is applied to the context before it is encoded in JSON. By default, it is the identity function.
 For instance, this function can be used to filter out keys from the context.
 
-### Logback configuration
+#### Logback configuration
 
 For server/productive usage, you want to configure logback appenders with the `LogstashEncoder` encoder.
 This will cause logback to emit one line of JSON for every log entry. In the following example, 

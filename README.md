@@ -153,7 +153,7 @@ we configure the `ConsoleAppender` to use the `LogstashEncoder`.
 	<!-- libraries -->
 	<logger name="ch.qos.logback.classic" level="WARN"/>
 	<logger name="org.apache.http" level="WARN"/>
-	<logger name="codesmith.logger.core" level="WARN"/>
+	<logger name="codesmith.logger" level="WARN"/>
 
 	<root level="INFO">
 		<appender-ref ref="STDOUT"/>
@@ -180,7 +180,7 @@ we recommand to use the standard pattern encoder. Use the `%marker` pattern to p
 	<!-- libraries -->
 	<logger name="ch.qos.logback.classic" level="WARN"/>
 	<logger name="org.apache.http" level="INFO"/>
-	<logger name="codesmith.logger.core" level="WARN"/>
+	<logger name="codesmith.logger" level="WARN"/>
 
 	<root level="INFO">
 		<appender-ref ref="STDOUT"/>

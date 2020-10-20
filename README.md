@@ -166,13 +166,19 @@ we configure the `ConsoleAppender` to use the `LogstashEncoder`.
 While it is possible to use the previous configuration for development, it can be problematic
 to read stack traces of `Throwable` logged events as they will on a (very long) line. For development,
 we recommand to use the standard pattern encoder. Use the `%marker` pattern to print out the context.
+In the following example, we also keep the JSON encoder so that you can see how the logs will be
+on production.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" debug="true" scanPeriod="20 seconds">
 	<statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
 
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+	<appender name="STDOUT-JSON" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+	</appender>
+
+	<appender name="STDOUT-TEXT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS} %-5level %-18thread - %marker - %msg%n
 			</pattern>
@@ -181,11 +187,11 @@ we recommand to use the standard pattern encoder. Use the `%marker` pattern to p
 
 	<!-- libraries -->
 	<logger name="ch.qos.logback.classic" level="WARN"/>
-	<logger name="org.apache.http" level="INFO"/>
 	<logger name="codesmith.logger" level="WARN"/>
 
 	<root level="INFO">
-		<appender-ref ref="STDOUT"/>
+		<appender-ref ref="STDOUT-JSON"/>
+		<appender-ref ref="STDOUT-TEXT"/>
 	</root>
 </configuration>
 ```

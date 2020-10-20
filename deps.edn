@@ -4,7 +4,7 @@
            ch.qos.logback/logback-core                   {:mvn/version "1.2.3"}
            net.logstash.logback/logstash-logback-encoder {:mvn/version "6.4"}
            cheshire/cheshire                             {:mvn/version "5.10.0"}}
- :aliases {:dev      {:extra-paths ["resources", "dev"]
+ :aliases {:dev      {:extra-paths ["dev"]
                       :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
            :test     {:extra-paths ["test"]
                       :extra-deps  {org.clojure/test.check {:mvn/version "1.1.0"}}}

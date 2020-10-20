@@ -2,7 +2,7 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/codesmith/logger.svg)](https://clojars.org/codesmith/logger)
 
-This library is in ALPHA release.
+This library is in ALPHA release; expect API breaking changes.
 
 The `codesmith/logger` library is thin macro layer on top of [Slf4j](http://www.slf4j.org).
 It simplifies the usage of the [Logstash Logback Encoder](https://github.com/logstash/logstash-logback-encoder)

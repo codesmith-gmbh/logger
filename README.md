@@ -23,7 +23,7 @@ creates a var in the namespace with the name `⠇⠕⠶⠻`. You must avoid crea
 
 ```clojure
 (ns example
-  (require [codesmith.logger.core :as log]))
+  (require [codesmith.logger :as log]))
 
 (log/deflogger)
 

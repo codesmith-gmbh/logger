@@ -56,7 +56,7 @@ that are passed as structured arguments.
 
 The `info-c` macro produces code that checks if the info log level is enabled and it guaranties that
 the json transformation happens exactly once. The json transformation is handled by the 
-library `cheshire`. If the context or structured argument value is not encodable by cheshire,
+library `jsonista`. If the context or structured argument value is not encodable by jsonista,
 the context is encoded via `pr-str` and emitted as string. The library logs a warning in that case.
 
 ```clojure
@@ -77,7 +77,7 @@ The macro `info-m` is used for simple message formating. To have structured argu
 #### Macro `info-e`
 
 The macro `info-e` is used to log errors (Throwables). The macro comes with 3 variants: error only;
-error and message; error, context and message. In the first case, the message from the error
+error and context; error, context and message. In the first case, the message from the error
 is used as message via `Throwable#getMessage()` and the result of `ex-data` is put ins the json under
 the key `exdata` (by default). The dyadic version takes a context as second argument.
 The triadic version allows to give an alternative error message.

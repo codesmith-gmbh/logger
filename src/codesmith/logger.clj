@@ -296,8 +296,8 @@
   "Uses `log-e` on trace level."
   ([e]
    `(log-e ~'trace ~e))
-  ([e msg]
-   `(log-e ~'trace ~e ~msg))
+  ([e ctx]
+   `(log-e ~'trace ~e ~ctx))
   ([e ctx msg]
    `(log-e ~'trace ~e ~ctx ~msg)))
 
@@ -319,8 +319,8 @@
   "Uses `log-e` on debug level."
   ([e]
    `(log-e ~'debug ~e))
-  ([e msg]
-   `(log-e ~'debug ~e ~msg))
+  ([e ctx]
+   `(log-e ~'debug ~e ~ctx))
   ([e ctx msg]
    `(log-e ~'debug ~e ~ctx ~msg)))
 
@@ -342,8 +342,8 @@
   "Uses `log-e` on info level."
   ([e]
    `(log-e ~'info ~e))
-  ([e msg]
-   `(log-e ~'info ~e ~msg))
+  ([e ctx]
+   `(log-e ~'info ~e ~ctx))
   ([e ctx msg]
    `(log-e ~'info ~e ~ctx ~msg)))
 
@@ -365,8 +365,8 @@
   "Uses `log-e` on warn level."
   ([e]
    `(log-e ~'warn ~e))
-  ([e msg]
-   `(log-e ~'warn ~e ~msg))
+  ([e ctx]
+   `(log-e ~'warn ~e ~ctx))
   ([e ctx msg]
    `(log-e ~'warn ~e ~ctx ~msg)))
 
@@ -388,8 +388,8 @@
   "Uses `log-e` on error level."
   ([e]
    `(log-e ~'error ~e))
-  ([e msg]
-   `(log-e ~'error ~e ~msg))
+  ([e ctx]
+   `(log-e ~'error ~e ~ctx))
   ([e ctx msg]
    `(log-e ~'error ~e ~ctx ~msg)))
 

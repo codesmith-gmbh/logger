@@ -97,6 +97,9 @@
   (is (not (log/error-e (ex-info "hello" {}) {:a "hello 1"})))
   (is (not (log/error-e (ex-info "hello" {}) {:a "hello 1"} "hello 2"))))
 
+(deftest string-coercing
+  (is (not (log/info-m {:a 1}))))
+
 (deftest constant-coercing
   (is (not (log/error-m "hello {}" 1)))
   (is (not (log/error-m "hello {}" 1.2)))

@@ -237,7 +237,7 @@
     (case (count args)
       0 `(. ~'⠇⠕⠶⠻
             (~method
-              ~msg))
+              (coerce-string ~msg)))
       1 `(. ~'⠇⠕⠶⠻
             (~method
               (coerce-string ~msg)

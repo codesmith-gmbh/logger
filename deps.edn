@@ -1,16 +1,16 @@
 {:paths   ["src"]
- :deps    {org.clojure/clojure                           {:mvn/version "1.10.1"}
-           ch.qos.logback/logback-classic                {:mvn/version "1.2.3"}
-           ch.qos.logback/logback-core                   {:mvn/version "1.2.3"}
-           net.logstash.logback/logstash-logback-encoder {:mvn/version "6.4"}
+ :deps    {org.clojure/clojure                           {:mvn/version "1.10.3"}
+           ch.qos.logback/logback-classic                {:mvn/version "1.2.6"}
+           ch.qos.logback/logback-core                   {:mvn/version "1.2.6"}
+           net.logstash.logback/logstash-logback-encoder {:mvn/version "6.6"}
            cheshire/cheshire                             {:mvn/version "5.10.0"}}
  :aliases {:dev      {:extra-paths ["dev"]
                       :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
            :test     {:extra-paths ["test"]
                       :extra-deps  {org.clojure/test.check {:mvn/version "1.1.0"}}}
-           :runner   {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.700"}}
+           :runner   {:extra-deps {lambdaisland/kaocha {:mvn/version "1.60.945"}}
                       :main-opts  ["-m" "kaocha.runner"]}
-           :outdated {:extra-deps {antq/antq {:mvn/version "0.7.5"}}
+           :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "1.1.0"}}
                       :main-opts  ["-m" "antq.core"]}
            :jar      {:extra-deps {seancorfield/depstar {:mvn/version "1.1.117"}}
                       :main-opts  ["-m" "hf.depstar.jar" "target/codesmith-logger.jar"]}

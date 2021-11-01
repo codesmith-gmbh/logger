@@ -3,7 +3,7 @@
            ch.qos.logback/logback-classic                {:mvn/version "1.2.6"}
            ch.qos.logback/logback-core                   {:mvn/version "1.2.6"}
            net.logstash.logback/logstash-logback-encoder {:mvn/version "6.6"}
-           cheshire/cheshire                             {:mvn/version "5.10.0"}}
+           metosin/jsonista                              {:mvn/version "0.3.4"}}
  :aliases {:dev      {:extra-paths ["dev"]
                       :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
            :test     {:extra-paths ["test"]

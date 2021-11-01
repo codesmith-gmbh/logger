@@ -1,7 +1,7 @@
 (ns codesmith.logger
   (:require [clojure.string :as str]
             [clojure.pprint :as pp]
-            [cheshire.core :as json])
+            [jsonista.core :as json])
   (:refer-clojure :exclude [assoc])
   (:import [org.slf4j LoggerFactory Logger]
            [net.logstash.logback.argument StructuredArguments]
@@ -61,10 +61,10 @@
 
 (defn raw-json [value]
   (try
-    (json/generate-string value)
+    (json/write-value-as-string value)
     (catch Exception e
       (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
-      (json/generate-string (pr-str value)))))
+      (json/write-value-as-string (pr-str value)))))
 
 (defmacro coerce-string
   "Coerce, at compile time, the argument to be a String."

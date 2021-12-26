@@ -6,3 +6,4 @@
 /.lein-failures
 /test2junit/
 /build.xml
+/.DS_Store

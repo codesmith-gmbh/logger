@@ -1,0 +1,14 @@
+#!/usr/bin/env bb
+(ns proj
+  (:require [lioss.main :as lioss]))
+
+(lioss/main
+  {:license        :epl
+   :inception-year 2020
+   :description    "Thin macro layer on top of SLF4J."
+   :group-id       "codesmith"
+   :name           "logger"
+   :gh-project     "codesmith-gmbh/logger"
+   :org-name       "Codesmith GmbH"
+   :authors        ["Stanislas Nanchen"]
+   :org-url        "https://codesmith.ch"})

@@ -1,4 +1,4 @@
-# 0.5.53 (2021-12-29 / 6dea47f)
+# 0.5.54 (2021-12-29 / 3756776)
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## 0.3.2

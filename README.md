@@ -98,7 +98,7 @@ The triadic version allows to give an alternative error message.
 
 As for the `info-c` macro, the `info-e` macro produces code that checks if the info log level is enabled
 and it guaranties that the json transformation happens exactly once.
-The json transformation is handled by the library `cheshire`.
+The json transformation is handled by the library `jsonista`.
 If the first argument is not a Throwable, the library will wrap a string representation of
 that value with `ex-info`. The library logs a warning in that case.
 

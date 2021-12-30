@@ -1,22 +1,38 @@
+# Unreleased
+
+## Added
+
+## Fixed
+
+- documentation
+- building/releasing scripts
+
+## Changed
+
 # 0.5.54 (2021-12-29 / 3756776)
-All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## 0.3.2
+## 0.4.X
 
-### Fixed
+## Changes
+
+- jsonista for JSON encoding
+
+# 0.3.2
+
+## Fixed
 - namespace in documentation and examples.
 
-## 0.3.1
+# 0.3.1
 
-### Removed
+## Removed
 - Unused dependency on `org.clojure/tools.deps.alpha`
 
-## 0.3.0
+# 0.3.0
 
-### Added
+## Added
 - BREAKING CHANGE: Support for StructuredArguments in the `log-c` macro.
 
-### Changed
+## Changed
 - BREAKING CHANGE: main namespace is now `codesmith.logger`
 - BREAKING CHANGE: the dyadic version of the `log-e` macros takes now a context as second argument (to encourage
   passing a context).
@@ -27,12 +43,12 @@ All notable changes to this project will be documented in this file. This change
 - `seancorfield/depstar` version bumped to 1.1.132
 - `slipset/deps-deploy` version bumped to 0.1.1
 
-## 0.2.1
+# 0.2.1
 
-### Fixed
+## Fixed
 - Removed faulty slf4j nop dependency in pom file.
 
-## 0.2.0
+# 0.2.0
 
-### Added
+## Added
 - Logging macros.

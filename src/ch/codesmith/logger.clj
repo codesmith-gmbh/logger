@@ -1,4 +1,4 @@
-(ns codesmith.logger
+(ns ch.codesmith.logger
   (:require [clojure.string :as str]
             [clojure.pprint :as pp]
             [jsonista.core :as json])

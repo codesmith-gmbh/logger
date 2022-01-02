@@ -1,6 +1,6 @@
-(ns codesmith.logger.logger-test
+(ns ch.codesmith.logger.logger-test
   (:require [clojure.test :refer :all]
-            [codesmith.logger :as log])
+            [ch.codesmith.logger :as log])
   (:import [org.slf4j Logger]))
 
 (log/deflogger)

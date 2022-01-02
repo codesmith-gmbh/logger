@@ -9,7 +9,7 @@
 	<!-- libraries -->
 	<logger name="ch.qos.logback.classic" level="WARN"/>
 	<logger name="org.apache.http" level="WARN"/>
-	<logger name="codesmith.logger" level="WARN"/>
+	<logger name="ch.codesmith.logger" level="WARN"/>
 
 	<root level="INFO">
 		<appender-ref ref="STDOUT"/>

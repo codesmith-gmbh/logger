@@ -6,6 +6,8 @@
 
 ## Changed
 
+Moved the group + package prefix from codesmith to ch.codesmith
+
 # 0.5.57 (2021-12-30 / 3e8d343)
 
 ## Added
@@ -41,7 +43,7 @@
 - BREAKING CHANGE: Support for StructuredArguments in the `log-c` macro.
 
 ## Changed
-- BREAKING CHANGE: main namespace is now `codesmith.logger`
+- BREAKING CHANGE: main namespace is now `ch.codesmith.logger`
 - BREAKING CHANGE: the dyadic version of the `log-e` macros takes now a context as second argument (to encourage
   passing a context).
 - The `log-e` macros emits the `ex-data` under another key (`exdata`) instead of merging the context with the context.

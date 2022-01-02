@@ -4,9 +4,11 @@
 
 ## Fixed
 
+- Fix #8 : Use qualified namespaces when encoding StructuredArguments
+
 ## Changed
 
-Moved the group + package prefix from codesmith to ch.codesmith
+- Moved the group + package prefix from codesmith to ch.codesmith
 
 # 0.5.57 (2021-12-30 / 3e8d343)
 

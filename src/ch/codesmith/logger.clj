@@ -78,9 +78,20 @@
   This macro is necessary to avoid reflection warning from numeric constants that are emitted unboxed by the compiler."
   `(RT/box ~arg))
 
+(defn fullname [k]
+  (if (string? k)
+    k
+    (if-let [namespace (namespace k)]
+      (.toString
+        (doto (StringBuilder.)
+          (.append namespace)
+          (.append "/")
+          (.append (name k))))
+      (name k))))
+
 (defn kv [k v]
   (StructuredArguments/raw
-    (name k)
+    (fullname k)
     (raw-json v)))
 
 (defmacro compile-to-struct-args [& args]

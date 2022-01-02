@@ -7,6 +7,15 @@
 
 (set! *warn-on-reflection* true)
 
+(deftest fullname-test-correctness
+  (is (= "a" (log/fullname "a")))
+  (is (= "a" (log/fullname :a)))
+  (is (= "a" (log/fullname 'a)))
+
+  (is (= "a/b" (log/fullname "a/b")))
+  (is (= "a/b" (log/fullname :a/b)))
+  (is (= "a/b" (log/fullname 'a/b))))
+
 (deftest proper-meta
   (is (= Logger (:tag (meta #'⠇⠕⠶⠻)))))
 

@@ -1,4 +1,4 @@
-# Unreleased
+# 0.6.61 (2022-01-02 / e2c89bc)
 
 ## Added
 

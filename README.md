@@ -13,6 +13,12 @@ to structure the log entries.
 
 ## Usage
 
+To use, include in your deps.edn
+
+```
+ch.codesmith/logger {:mvn/version "0.6.66"}
+```
+
 ### In Clojure
 
 The logging macros are in the namespace `ch.codesmith.logger`.

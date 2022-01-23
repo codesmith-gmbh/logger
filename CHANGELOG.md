@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. This change
 
 ## Unreleased
 
+## 0.6.66 (2022-01-23)
+
 ### Changed
 
 - Tooling: using anvil.

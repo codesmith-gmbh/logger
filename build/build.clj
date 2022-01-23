@@ -37,8 +37,7 @@
   (verify)
   (let [jar-file (jar {})]
     (libs/deploy {:jar-file jar-file
-                  :lib      lib
-                  :pom-file "target/classes/META-INF/maven/ch.codesmith/blocks/pom.xml"})
+                  :lib      lib})
     (rel/git-release! {:deps/coord          lib
                        :version             version
                        :release-branch-name release-branch-name

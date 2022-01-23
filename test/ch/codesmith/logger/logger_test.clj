@@ -1,5 +1,5 @@
 (ns ch.codesmith.logger.logger-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is]]
             [ch.codesmith.logger :as log])
   (:import [org.slf4j Logger]))
 
@@ -17,7 +17,7 @@
   (is (= "a/b" (log/fullname 'a/b))))
 
 (deftest proper-meta
-  (is (= Logger (:tag (meta #'⠇⠕⠶⠻)))))
+  (is (= Logger (:tag (meta #_{:clj-kondo/ignore [:unresolved-symbol]} #'⠇⠕⠶⠻)))))
 
 (deftest level-pred-test
   (is (= 'isTraceEnabled (log/level-pred 'trace)))

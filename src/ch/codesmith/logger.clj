@@ -63,7 +63,7 @@
   (try
     (json/write-value-as-string value)
     (catch Exception e
-      (.warn ⠇⠕⠶⠻ "Serialization error" ^Exception e)
+      (.warn #_{:clj-kondo/ignore [:unresolved-symbol]} ⠇⠕⠶⠻ "Serialization error" ^Exception e)
       (json/write-value-as-string (pr-str value)))))
 
 (defmacro coerce-string
@@ -73,9 +73,9 @@
     arg
     `(str ~arg)))
 
-(defmacro box [arg]
-  "Ensures at compile time that the argument is an Object.
+(defmacro box "Ensures at compile time that the argument is an Object.
   This macro is necessary to avoid reflection warning from numeric constants that are emitted unboxed by the compiler."
+  [arg]
   `(RT/box ~arg))
 
 (defn fullname [k]
@@ -94,8 +94,9 @@
     (fullname k)
     (raw-json v)))
 
-(defmacro compile-to-struct-args [& args]
+(defmacro compile-to-struct-args
   "Compile code to create a java array with the given arguments"
+  [& args]
   (let [struct-args (partition 2 args)
         assignments (map-indexed (fn [i [k v]]
                                    `(aset ~i (kv ~k ~v)))
@@ -103,25 +104,28 @@
     `(doto (object-array ~(count struct-args))
        ~@assignments)))
 
-(defmacro compile-to-array [& args]
+(defmacro compile-to-array
   "Compile code to create a java array with the given arguments"
+  [& args]
   (let [assignments (map-indexed (fn [i arg]
                                    `(aset ~i (box ~arg)))
                                  args)]
     `(doto (object-array ~(count args))
        ~@assignments)))
 
-(defn ensure-throwable ^Throwable [e]
+(defn ensure-throwable
   "Ensures, at runtime, that the argument is a throwable.
   If the argument is not throwable, its string representation is embedded in an `ex-info`."
+  ^Throwable [e]
   (if (instance? Throwable e)
     e
     (let [e-str (str e)]
       (.warn ⠇⠕⠶⠻ "Value {} is not a throwable; wrapping in ex-info" e-str)
       (ex-info e-str {}))))
 
-(defn level-pred [method]
+(defn level-pred
   "For the given `method` symbol, compute the corresponding `isXXXEnabled` method symbol."
+  [method]
   (let [method-name (name method)]
     (symbol
       (str
@@ -130,8 +134,9 @@
         (subs method-name 1)
         "Enabled"))))
 
-(defn throw-logger-missing-exception []
+(defn throw-logger-missing-exception
   "Throw an [[IllegalStateException]] to signal that the `deflogger` macro has not been called properly."
+  []
   (throw (IllegalStateException. (str "(deflogger) has not been called in current namespace `" *ns* "`"))))
 
 ;; # Context and Marker
@@ -153,9 +158,9 @@
 (extend-type Object
   ToContextMarker
   (marker [self logging-key]
-    "Creates a [[RawJsonAppendingMarker]] to include `ctx` in the JSON map produced by the logstash encoder.
-  This function attempts first to transform `ctx` in JSON with cheshire; if it fails, it is transformed
-  as JSON string with [[pr-str]]."
+    ; Creates a [[RawJsonAppendingMarker]] to include `ctx` in the JSON map produced by the logstash encoder.
+    ; This function attempts first to transform `ctx` in JSON with cheshire; if it fails, it is transformed
+    ; as JSON string with [[pr-str]].
     (let [ctx   (context-pre-logging-transformation self)
           value (raw-json ctx)]
       (RawJsonAppendingMarker. logging-key value)))
@@ -170,9 +175,10 @@
       (marker ctx logging-key)))
   (ctx-marker [_] mrkr))
 
-(defn ctx [m]
+(defn ctx
   "Wraps the supplied map in a record containing a prerendered Marker; this allows to use a
   relatively static context without rerendering it as json on every log entry."
+  [m]
   (->Context (ctx-marker m) m))
 
 (defn assoc
@@ -238,12 +244,13 @@
                (compile-to-struct-args ~@struct-args)))))
      (throw-logger-missing-exception))))
 
-(defmacro log-m [method msg & args]
+(defmacro log-m
   "Logging macro for a simple logging message `msg`.
   Variants allow to pass a message as slf4j format string with n arguments.
   The argument `method` is the symbol of the log method to call on the [[Logger]] object. Typically,
   the level macros (`trace-m`, `debug-m`, etc.) are used instead of this macro.
   The macro generates code that verifies that the corresponding log level is enabled."
+  [method msg & args]
   (if (resolve '⠇⠕⠶⠻)
     (case (count args)
       0 `(. ~'⠇⠕⠶⠻
@@ -299,8 +306,8 @@
   ([ctx msg & args]
    `(log-c ~'trace ~ctx ~msg ~@args)))
 
-(defmacro trace-m [msg & args]
-  "Uses `loc-m` on trace level."
+(defmacro trace-m "Uses `loc-m` on trace level."
+  [msg & args]
   `(log-m ~'trace ~msg ~@args))
 
 (defmacro trace-e
@@ -322,8 +329,9 @@
   ([ctx msg & args]
    `(log-c ~'debug ~ctx ~msg ~@args)))
 
-(defmacro debug-m [msg & args]
+(defmacro debug-m
   "Uses `log-m` on debug level."
+  [msg & args]
   `(log-m ~'debug ~msg ~@args))
 
 (defmacro debug-e
@@ -345,8 +353,9 @@
   ([ctx msg & args]
    `(log-c ~'info ~ctx ~msg ~@args)))
 
-(defmacro info-m [msg & args]
+(defmacro info-m
   "Uses `log-m` on info level."
+  [msg & args]
   `(log-m ~'info ~msg ~@args))
 
 (defmacro info-e
@@ -368,8 +377,9 @@
   ([ctx msg & args]
    `(log-c ~'warn ~ctx ~msg ~@args)))
 
-(defmacro warn-m [msg & args]
+(defmacro warn-m
   "Uses `log-m` on warn level."
+  [msg & args]
   `(log-m ~'warn ~msg ~@args))
 
 (defmacro warn-e
@@ -391,8 +401,9 @@
   ([ctx msg & args]
    `(log-c ~'error ~ctx ~msg ~@args)))
 
-(defmacro error-m [msg & args]
+(defmacro error-m
   "Uses `log-m` on error level."
+  [msg & args]
   `(log-m ~'error ~msg ~@args))
 
 (defmacro error-e

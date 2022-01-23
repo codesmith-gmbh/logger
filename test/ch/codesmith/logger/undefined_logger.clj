@@ -1,5 +1,5 @@
-(ns codesmith.logger.undefined-logger
-  (:require [clojure.test :refer :all]
+(ns ch.codesmith.logger.undefined-logger
+  (:require [clojure.test :refer [deftest is]]
             [ch.codesmith.logger :as log])
   (:import [clojure.lang Compiler$CompilerException]))
 

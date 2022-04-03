@@ -1,20 +1,17 @@
 {:paths   ["src"]
  :deps    {org.clojure/clojure                           {:mvn/version "1.10.3"}
-           ch.qos.logback/logback-classic                {:mvn/version "1.2.10"}
-           ch.qos.logback/logback-core                   {:mvn/version "1.2.10"}
+           ch.qos.logback/logback-classic                {:mvn/version "1.2.11"}
+           ch.qos.logback/logback-core                   {:mvn/version "1.2.11"}
            net.logstash.logback/logstash-logback-encoder {:mvn/version "7.0.1"}
            metosin/jsonista                              {:mvn/version "0.3.5"}}
  :aliases {:dev       {:extra-paths ["dev"]
                        :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
            :build     {:extra-paths ["build"]
-                       :extra-deps  {io.github.codesmith-gmbh/anvil {:git/tag "v0.4.93" :git/sha "66e8c9b"} }
+                       :extra-deps  {io.github.codesmith-gmbh/anvil {:git/tag "v0.4.93" :git/sha "66e8c9b"}}
                        :ns-default  build}
            :test      {:extra-paths ["test"]
                        :extra-deps  {org.clojure/test.check {:mvn/version "1.1.1"}}}
-           :runner    {:extra-deps {lambdaisland/kaocha {:mvn/version "1.60.977"}}
+           :runner    {:extra-deps {lambdaisland/kaocha {:mvn/version "1.64.1010"}}
                        :main-opts  ["-m" "kaocha.runner"]}
-           :outdated  {:extra-deps {com.github.liquidz/antq {:mvn/version "1.4.0"}
-                                    org.slf4j/slf4j-simple  {:mvn/version "1.7.33"}}
-                       :main-opts  ["-m" "antq.core"]}
            :clj-kondo {:replace-deps {clj-kondo/clj-kondo {:mvn/version "2022.01.15"}}
                        :main-opts    ["-m" "clj-kondo.main"]}}}

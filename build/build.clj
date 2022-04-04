@@ -38,8 +38,8 @@
   (let [jar-file (jar {})]
     (libs/deploy {:jar-file jar-file
                   :lib      lib})
-    (rel/git-release! {:deps/coord          lib
+    (rel/git-release! {:artifacts           [{:deps-coord    lib
+                                              :artifact-type :mvn}]
                        :version             version
-                       :release-branch-name release-branch-name
-                       :artifact-type       :mvn})))
+                       :release-branch-name release-branch-name})))
 

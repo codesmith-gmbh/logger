@@ -1,9 +1,13 @@
 {:paths   ["src"]
- :deps    {org.clojure/clojure                           {:mvn/version "1.10.3"}
-           ch.qos.logback/logback-classic                {:mvn/version "1.2.11"}
-           ch.qos.logback/logback-core                   {:mvn/version "1.2.11"}
-           net.logstash.logback/logstash-logback-encoder {:mvn/version "7.0.1"}
-           metosin/jsonista                              {:mvn/version "0.3.5"}}
+ :deps    {org.clojure/clojure                                    {:mvn/version "1.10.3"}
+           ch.qos.logback/logback-classic                         {:mvn/version "1.2.11"}
+           ch.qos.logback/logback-core                            {:mvn/version "1.2.11"}
+           net.logstash.logback/logstash-logback-encoder          {:mvn/version "7.0.1"}
+           metosin/jsonista                                       {:mvn/version "0.3.5"}
+           ; for nvd
+           com.fasterxml.jackson.core/jackson-core                {:mvn/version "2.13.2"}
+           com.fasterxml.jackson.core/jackson-databind            {:mvn/version "2.13.2.2"}
+           com.fasterxml.jackson.datatype/jackson-datatype-jsr310 {:mvn/version "2.13.2"}}
  :aliases {:dev       {:extra-paths ["dev"]
                        :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
            :build     {:extra-paths ["build"]

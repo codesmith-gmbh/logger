@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## 0.6.71 (2022-04-04)
 
+### Changed
+
+- update dependencies
+
 ## 0.6.66 (2022-01-23)
 
 ### Changed

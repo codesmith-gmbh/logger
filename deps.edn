@@ -8,7 +8,7 @@
            com.fasterxml.jackson.core/jackson-core                {:mvn/version "2.13.3"}
            com.fasterxml.jackson.core/jackson-databind            {:mvn/version "2.13.3"}
            com.fasterxml.jackson.datatype/jackson-datatype-jsr310 {:mvn/version "2.13.3"}}
- :aliases {:dev       {:extra-paths ["dev"]
+ :aliases {:dev       {:extra-paths ["dev" "scripts"]
                        :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
            :build     {:extra-paths ["build"]
                        :extra-deps  {io.github.codesmith-gmbh/anvil {:git/tag "v0.7.135" :git/sha "fb27981"}}

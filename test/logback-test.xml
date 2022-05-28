@@ -16,7 +16,6 @@
 	<!-- libraries -->
 	<logger name="ch.qos.logback.classic" level="WARN"/>
 	<logger name="org.apache.http" level="WARN"/>
-	<logger name="ch.codesmith.logger" level="INFO"/>
 
 	<root level="INFO">
 		<appender-ref ref="STDOUT-JSON"/>

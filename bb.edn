@@ -1,0 +1,14 @@
+{:paths ["scripts"]
+ :tasks {test     {:doc  "Runs the tests."
+                   :task (clojure "-M:test:runner --no-capture-output")}
+         lint     {:doc  "Lint with clj-kondo"
+                   :task (shell "./scripts/lint")}
+         nvd      {:doc  "Check for CVE in the dependencies."
+                   :task (shell "./scripts/nvd")}
+         verify   {:doc     "Verifies the whole project."
+                   :depends [lint nvd test]}
+         outdated {:doc  "Check for outdated dependencies."
+                   :task outdated/check-project}
+         release  {:doc     "Releases to clojars."
+                   :depends [verify]
+                   :task    (clojure "-T:build release")}}}

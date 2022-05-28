@@ -20,10 +20,6 @@
                     :organization "codesmith-gmbh"
                     :project      "logger"}})
 
-
-(defn verify []
-  (sh/sh! "./build/verify"))
-
 (defn jar [_]
   (libs/jar {:lib              lib
              :version          version
@@ -34,7 +30,6 @@
 
 (defn release [_]
   (rel/check-released-allowed release-branch-name)
-  (verify)
   (let [jar-file (jar {})]
     (libs/deploy {:jar-file jar-file
                   :lib      lib})

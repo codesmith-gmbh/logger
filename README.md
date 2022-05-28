@@ -16,7 +16,7 @@ to structure the log entries.
 To use, include in your deps.edn
 
 ```deps
-ch.codesmith/logger {:mvn/version "0.6.66"}
+ {:mvn/version "0.6.76"}
 ```
 
 ### In Clojure

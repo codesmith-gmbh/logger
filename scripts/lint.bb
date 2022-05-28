@@ -3,7 +3,7 @@
             [babashka.process :as ps]
             [clojure.string :as str]))
 
-(def kondo-config (str (fs/path ".clj-kondo" "config.edn")))
+(def kondo-config (str (fs/real-path (fs/path ".clj-kondo" "config.edn"))))
 
 (def deps '{:deps      {clj-kondo/clj-kondo {:mvn/version "2022.05.28"}}
             :main-opts ["-m" "clj-kondo.main"]})

@@ -1,6 +1,5 @@
 (ns build
-  (:require [ch.codesmith.anvil.shell :as sh]
-            [ch.codesmith.anvil.libs :as libs]
+  (:require [ch.codesmith.anvil.libs :as libs]
             [ch.codesmith.anvil.release :as rel]
             [clojure.tools.build.api :as b]))
 

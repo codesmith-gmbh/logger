@@ -2,13 +2,13 @@
  :tasks {test     {:doc  "Runs the tests."
                    :task (clojure "-M:test:runner --no-capture-output")}
          lint     {:doc  "Lint with clj-kondo"
-                   :task (shell "./scripts/lint")}
+                   :task sole/lint-project}
          nvd      {:doc  "Check for CVE in the dependencies."
-                   :task (shell "./scripts/nvd")}
+                   :task nvd/check-vulnerabilities}
          verify   {:doc     "Verifies the whole project."
                    :depends [lint nvd test]}
          outdated {:doc  "Check for outdated dependencies."
-                   :task outdated/check-project}
+                   :task sole/check-outdated-deps}
          release  {:doc     "Releases to clojars."
                    :depends [verify]
                    :task    (clojure "-T:build release")}}}

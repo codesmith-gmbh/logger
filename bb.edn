@@ -1,5 +1,8 @@
 {:paths ["scripts"]
- :tasks {test     {:doc  "Runs the tests."
+ :tasks {clean    {:doc      "Cleans the project"
+                   :requires ([babashka.fs :as fs])
+                   :task     (fs/delete-tree (fs/path "target"))}
+         test     {:doc  "Runs the tests."
                    :task (clojure "-M:test:runner --no-capture-output")}
          lint     {:doc  "Lint with clj-kondo"
                    :task sole/lint-project}
@@ -10,5 +13,5 @@
          outdated {:doc  "Check for outdated dependencies."
                    :task sole/check-outdated-deps}
          release  {:doc     "Releases to clojars."
-                   :depends [verify]
+                   :depends [clean verify]
                    :task    (clojure "-T:build release")}}}

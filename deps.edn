@@ -3,7 +3,7 @@
            ch.qos.logback/logback-classic                         {:mvn/version "1.2.11"}
            ch.qos.logback/logback-core                            {:mvn/version "1.2.11"}
            net.logstash.logback/logstash-logback-encoder          {:mvn/version "7.2"}
-           metosin/jsonista                                       {:mvn/version "0.3.5"}
+           metosin/jsonista                                       {:mvn/version "0.3.6"}
            ; for nvd
            com.fasterxml.jackson.core/jackson-core                {:mvn/version "2.13.3"}
            com.fasterxml.jackson.core/jackson-databind            {:mvn/version "2.13.3"}
@@ -11,7 +11,7 @@
  :aliases {:dev       {:extra-paths ["dev" "scripts"]
                        :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
            :build     {:extra-paths ["build"]
-                       :extra-deps  {io.github.codesmith-gmbh/anvil {:git/tag "v0.7.135" :git/sha "fb27981"}}
+                       :extra-deps  {io.github.codesmith-gmbh/anvil {:git/tag "v0.8.151" :git/sha "2cf7fd7"}}
                        :ns-default  build}
            :test      {:extra-paths ["test"]
                        :extra-deps  {org.clojure/test.check {:mvn/version "1.1.1"}}}

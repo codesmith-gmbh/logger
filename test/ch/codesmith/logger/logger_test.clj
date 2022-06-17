@@ -33,6 +33,11 @@
   (is (not (log/trace-c {} "hello {} {}" :first (+ 1 2) :second {:a 1})))
   (is (not (log/trace-c {} "hello {} {} {}" :first (+ 1 2) :second {:a 1} :third 5)))
 
+  (is (not (log/trace-s "hello")))
+  (is (not (log/trace-s "hello {}" :first 1)))
+  (is (not (log/trace-s "hello {} {}" :first (+ 1 2) :second {:a 1})))
+  (is (not (log/trace-s "hello {} {} {}" :first (+ 1 2) :second {:a 1} :third 5)))
+
   (is (not (log/trace-m "hello")))
   (is (not (log/trace-m "hello {}" 1)))
   (is (not (log/trace-m "hello {} {}" 1 2)))
@@ -48,6 +53,11 @@
   (is (not (log/debug-c {} "hello {}" :first 1)))
   (is (not (log/debug-c {} "hello {} {}" :first 1 :second {:a 1})))
   (is (not (log/debug-c {} "hello {} {} {}" :first 1 :second {:a 1} :third 5)))
+
+  (is (not (log/debug-s "hello")))
+  (is (not (log/debug-s "hello {}" :first 1)))
+  (is (not (log/debug-s "hello {} {}" :first (+ 1 2) :second {:a 1})))
+  (is (not (log/debug-s "hello {} {} {}" :first (+ 1 2) :second {:a 1} :third 5)))
 
   (is (not (log/debug-m "hello")))
   (is (not (log/debug-m "hello {}" 1)))
@@ -65,6 +75,11 @@
   (is (not (log/info-c {} "hello {} {}" :first 1 :second {:a 1})))
   (is (not (log/info-c {} "hello {} {} {}" :first 1 :second {:a 1} :third 5)))
 
+  (is (not (log/info-s "hello")))
+  (is (not (log/info-s "hello {}" :first 1)))
+  (is (not (log/info-s "hello {} {}" :first (+ 1 2) :second {:a 1})))
+  (is (not (log/info-s "hello {} {} {}" :first (+ 1 2) :second {:a 1} :third 5)))
+
   (is (not (log/info-m "hello")))
   (is (not (log/info-m "hello {}" 1)))
   (is (not (log/info-m "hello {} {}" 1 2)))
@@ -81,6 +96,11 @@
   (is (not (log/warn-c {} "hello {} {}" :first 1 :second {:a 1})))
   (is (not (log/warn-c {} "hello {} {} {}" :first 1 :second {:a 1} :third 5)))
 
+  (is (not (log/warn-s "hello")))
+  (is (not (log/warn-s "hello {}" :first 1)))
+  (is (not (log/warn-s "hello {} {}" :first (+ 1 2) :second {:a 1})))
+  (is (not (log/warn-s "hello {} {} {}" :first (+ 1 2) :second {:a 1} :third 5)))
+
   (is (not (log/warn-m "hello")))
   (is (not (log/warn-m "hello {}" 1)))
   (is (not (log/warn-m "hello {} {}" 1 2)))
@@ -96,6 +116,11 @@
   (is (not (log/error-c {} "hello {}" :first 1)))
   (is (not (log/error-c {} "hello {} {}" :first 1 :second {:a 1})))
   (is (not (log/error-c {} "hello {} {} {}" :first 1 :second {:a 1} :third 5)))
+
+  (is (not (log/error-s "hello")))
+  (is (not (log/error-s "hello {}" :first 1)))
+  (is (not (log/error-s "hello {} {}" :first (+ 1 2) :second {:a 1})))
+  (is (not (log/error-s "hello {} {} {}" :first (+ 1 2) :second {:a 1} :third 5)))
 
   (is (not (log/error-m "hello")))
   (is (not (log/error-m "hello {}" 1)))

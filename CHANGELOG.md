@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file. This change
 
 ## Unreleased
 
+### Added
+
+- functions/macros to get the version of a namespace.
+
+### Changed
+
+- bumped anvil dependency to v0.10.169 for version in MANIFEST in jars.
+
 ## 0.6.83 (2022-06-12)
 
 ## 0.6.76 (2022-05-28)

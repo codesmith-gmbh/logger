@@ -8,3 +8,4 @@
 /build.xml
 /.DS_Store
 /.clj-kondo/.cache/
+/test/versiontest/target/

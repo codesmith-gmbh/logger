@@ -1,7 +1,8 @@
 (ns ch.codesmith.logger
   (:require [clojure.string :as str]
             [clojure.pprint :as pp]
-            [jsonista.core :as json])
+            [jsonista.core :as json]
+            [clojure.edn :as edn])
   (:refer-clojure :exclude [assoc])
   (:import [org.slf4j LoggerFactory Logger]
            [net.logstash.logback.argument StructuredArguments]
@@ -46,6 +47,20 @@
   "Configuration function to set the [[context-pre-logging-transformation]]"
   [tranformation]
   (alter-var-root #'context-pre-logging-transformation (constantly tranformation)))
+
+(def default-version-file-path "/app/version.edn")
+
+(def version-file-path
+  "A path (as string) where a edn file with the version of the program is located.
+  The edn file must be a map with the key `:version`.
+  By default, it is the location where the [anvil](https://github.com/codesmith-gmbh/anvil)
+  library creates a version edn file when building docker artifacts."
+  default-version-file-path)
+
+(defn set-version-file-path!
+  "Configuration function to set the [[version-file-path]]"
+  [path]
+  (alter-var-root #'version-file-path (constantly path)))
 
 ;; # Logger definition
 
@@ -490,3 +505,38 @@
                         :value      val#}
                "spy")
         val#))))
+
+;; # version functions and macros to fetch the version of a project from different sources
+
+(defmacro version-from-ns-as-class
+  ([]
+   `(version-from-ns-as-class ~*ns*))
+  ([ns]
+   (let [ns (str ns)]
+     `(try
+        (some->
+          (Class/forName (str ~ns "__init"))
+          (.getPackage)
+          (.getImplementationVersion))
+        (catch Exception e#
+          (debug-e e# {:ns ~ns} "Could not extract the version from the ns (as class)"))))))
+
+(defn version-from-file
+  ([]
+   (version-from-file version-file-path))
+  ([version-file]
+   (try
+     (-> version-file
+         slurp
+         edn/read-string
+         :version)
+     (catch Exception _
+       (debug-s "Could not extract the version from the {}" :version-file version-file)))))
+
+(defmacro version
+  ([]
+   `(version ~*ns*))
+  ([ns]
+   `(or (version-from-ns-as-class ~ns)
+        (version-from-file)
+        "undefined")))

@@ -1,5 +1,6 @@
 {:paths   ["src"]
  :deps    {org.clojure/clojure                                    {:mvn/version "1.10.3"}
+           org.slf4j/slf4j-api                                    {:mvn/version "1.7.36"}
            ch.qos.logback/logback-classic                         {:mvn/version "1.2.11"}
            ch.qos.logback/logback-core                            {:mvn/version "1.2.11"}
            net.logstash.logback/logstash-logback-encoder          {:mvn/version "7.2"}
@@ -8,12 +9,14 @@
            com.fasterxml.jackson.core/jackson-core                {:mvn/version "2.13.3"}
            com.fasterxml.jackson.core/jackson-databind            {:mvn/version "2.13.3"}
            com.fasterxml.jackson.datatype/jackson-datatype-jsr310 {:mvn/version "2.13.3"}}
- :aliases {:dev       {:extra-paths ["dev" "scripts"]
-                       :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
-           :build     {:extra-paths ["build"]
-                       :extra-deps  {io.github.codesmith-gmbh/anvil {:git/tag "v0.8.151" :git/sha "2cf7fd7"}}
-                       :ns-default  build}
-           :test      {:extra-paths ["test"]
-                       :extra-deps  {org.clojure/test.check {:mvn/version "1.1.1"}}}
-           :runner    {:extra-deps {lambdaisland/kaocha {:mvn/version "1.66.1034"}}
-                       :main-opts  ["-m" "kaocha.runner"]}}}
+ :aliases {:dev    {:extra-paths ["dev" "scripts"]
+                    :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
+           :build  {:extra-paths ["build"]
+                    :extra-deps  {io.github.codesmith-gmbh/anvil {:git/tag "v0.10.169" :git/sha "cbd6036"}}
+                    :ns-default  build}
+           :test   {:extra-paths ["test"]
+                    :extra-deps  {org.clojure/test.check         {:mvn/version "1.1.1"}
+                                  babashka/process               {:mvn/version "0.1.3"}
+                                  io.github.codesmith-gmbh/anvil {:git/tag "v0.10.169" :git/sha "cbd6036"}}}
+           :runner {:extra-deps {lambdaisland/kaocha {:mvn/version "1.67.1055"}}
+                    :main-opts  ["-m" "kaocha.runner"]}}}

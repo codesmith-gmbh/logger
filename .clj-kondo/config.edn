@@ -1,1 +1,1 @@
-{}
+{:config-paths ["babashka/fs"]}

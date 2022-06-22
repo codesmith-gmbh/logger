@@ -1,14 +1,12 @@
 (ns ch.codesmith.logger.version-test
   (:require [babashka.fs :as fs]
+            [babashka.process :as ps]
             [ch.codesmith.anvil.basis :as ab]
             [ch.codesmith.anvil.libs :as libs]
-            [clojure.test :refer :all]
-            [clojure.tools.build.api :as b]
-            [clojure.pprint :as pp]
-            [clojure.string :as string]
-            [babashka.process :as ps]
+            [clojure.edn :as edn]
             [clojure.string :as str]
-            [clojure.edn :as edn]))
+            [clojure.test :refer [deftest is]]
+            [clojure.tools.build.api :as b]))
 
 (def root-path (fs/path "test" "versiontest"))
 (def lib 'logger/test)
@@ -26,7 +24,7 @@
   (build-test-jar)
   (binding [b/*project-root* (str root-path)]
     (let [basis     (ab/create-basis {})
-          classpath (string/join
+          classpath (str/join
                       (System/getProperty "path.separator")
                       (cons
                         (str (fs/absolutize (fs/path

@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. This change
 
 ## Unreleased
 
+## 0.6.89 (2022-06-22)
+
 ### Added
 
 - functions/macros to get the version of a namespace.

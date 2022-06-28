@@ -16,7 +16,7 @@ to structure the log entries.
 To use, include in your deps.edn
 
 ```deps
- {:mvn/version "0.6.89"}
+ {:mvn/version "0.6.93"}
 ```
 
 ### In Clojure

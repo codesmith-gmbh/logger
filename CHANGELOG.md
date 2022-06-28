@@ -3,6 +3,21 @@ All notable changes to this project will be documented in this file. This change
 
 ## Unreleased
 
+### Added
+
+- configuration function for an jsonista object-mapper to control the generation of the JSON values
+  from clojure values.
+
+### Fixed
+
+- stackoverflow when json encoding a multi-method.
+
+### Changed
+
+- Default json encoders for `AFunction` (the class name, that includes the function name)
+  and for `MultiFn` (the class name with the value of the package protected `name` field; if reflection
+  does not allow, then only the class name).
+
 ## 0.6.89 (2022-06-22)
 
 ### Added

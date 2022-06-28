@@ -146,5 +146,11 @@
   (is (not (log/info-c {:username "stan" :special {:a 1}})))
   (is (not (log/info-c {:username "stan" :special {:a +}}))))
 
+(defmulti test-multifn identity)
+
+(deftest multifn-without-stackoverflow
+  (is (not (log/info-c {:mfn test-multifn
+                        :fn  inc}))))
+
 (deftest spy-test
   (is (= 1 (log/spy :info (+ 1 0)))))

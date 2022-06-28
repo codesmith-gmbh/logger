@@ -1,14 +1,25 @@
 (ns ch.codesmith.logger
-  (:require [clojure.string :as str]
-            [clojure.pprint :as pp]
-            [jsonista.core :as json]
-            [clojure.edn :as edn])
   (:refer-clojure :exclude [assoc])
-  (:import [org.slf4j LoggerFactory Logger]
-           [net.logstash.logback.argument StructuredArguments]
-           [clojure.lang RT]
-           [java.util Collection]
-           [net.logstash.logback.marker RawJsonAppendingMarker Markers]))
+  (:require [clojure.edn :as edn]
+            [clojure.pprint :as pp]
+            [clojure.string :as str]
+            [jsonista.core :as json])
+  (:import (clojure.lang AFunction MultiFn RT)
+           (com.fasterxml.jackson.core JsonGenerator)
+           (java.util Collection)
+           (net.logstash.logback.argument StructuredArguments)
+           (net.logstash.logback.marker Markers RawJsonAppendingMarker)
+           (org.slf4j Logger LoggerFactory)))
+
+;; # Logger definition
+
+(defmacro deflogger
+  "Creates a var named `⠇⠕⠶⠻` in the current namespace `*ns*` to contain a [[org.slf4j.Logger]]
+  The name is \"logger\" written in braille-2 notation."
+  []
+  `(defonce ~(vary-meta '⠇⠕⠶⠻ clojure.core/assoc :tag Logger) (LoggerFactory/getLogger ~(.toString *ns*))))
+
+(deflogger)
 
 ;; # Configuration
 
@@ -62,24 +73,53 @@
   [path]
   (alter-var-root #'version-file-path (constantly path)))
 
-;; # Logger definition
+(defn to-string-encoder [value ^JsonGenerator gen]
+  (.writeString gen (str value)))
 
-(defmacro deflogger
-  "Creates a var named `⠇⠕⠶⠻` in the current namespace `*ns*` to contain a [[org.slf4j.Logger]]
-  The name is \"logger\" written in braille-2 notation."
-  []
-  `(defonce ~(vary-meta '⠇⠕⠶⠻ clojure.core/assoc :tag Logger) (LoggerFactory/getLogger ~(.toString *ns*))))
+(defn to-class-name-encoder [value ^JsonGenerator gen]
+  (to-string-encoder (if value (.getName (class value)) "")
+                     gen))
 
-(deflogger)
+(defn field-getter [^Class class ^String name]
+  (let [name-field (.getDeclaredField class name)]
+    (.setAccessible name-field true)
+    (fn [multi-fn]
+      (.get name-field multi-fn))))
+
+(def multifn-to-string
+  (let [class-name (.getName MultiFn)]
+    (try
+      (let [name-getter (field-getter MultiFn "name")]
+        #(str class-name "/" (name-getter %)))
+      (catch Exception e
+        (.debug #_{:clj-kondo/ignore [:unresolved-symbol]} ⠇⠕⠶⠻ "MultiFn#name is not accessible.s" ^Exception e)
+        (constantly class-name)))))
+
+(defn multi-fn-encoder [^MultiFn value ^JsonGenerator gen]
+  (.writeString gen ^String (multifn-to-string value)))
+
+(def default-jsonista-object-mapper
+  (json/object-mapper {:encoders {MultiFn   multi-fn-encoder
+                                  AFunction to-class-name-encoder}}))
+
+(def jsonista-object-mapper
+  "The object mapper used by jsonista for the serialization in raw json of the
+  context markers created by this library."
+  default-jsonista-object-mapper)
+
+(defn set-jsonista-object-mapper
+  "Configuration function to ste the [[jsonista-object-mapper]]"
+  [object-mapper]
+  (alter-var-root #'jsonista-object-mapper (constantly object-mapper)))
 
 ;; # Utility functions and macros.
 
 (defn raw-json [value]
   (try
-    (json/write-value-as-string value)
+    (json/write-value-as-string value jsonista-object-mapper)
     (catch Exception e
       (.warn #_{:clj-kondo/ignore [:unresolved-symbol]} ⠇⠕⠶⠻ "Serialization error" ^Exception e)
-      (json/write-value-as-string (pr-str value)))))
+      (json/write-value-as-string (pr-str value) jsonista-object-mapper))))
 
 (defmacro coerce-string
   "Coerce, at compile time, the argument to be a String."

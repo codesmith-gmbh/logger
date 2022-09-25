@@ -4,7 +4,7 @@
             [clojure.tools.build.api :as b]))
 
 (def lib 'ch.codesmith/logger)
-(def version (str "0.6." (b/git-count-revs {})))
+(def version (str "0.7." (b/git-count-revs {})))
 (def release-branch-name "master")
 
 (def description-data

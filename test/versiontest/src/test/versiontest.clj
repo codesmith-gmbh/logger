@@ -4,6 +4,7 @@
 
 (log/deflogger)
 
+#_:clj-kondo/ignore
 (defn -main []
   (log/set-version-file-path! "version.edn")
   (prn {:version                  (log/version)

@@ -3,8 +3,8 @@
             [babashka.process :as ps]
             [clojure.java.io :as io]))
 
-(def deps '{:deps {com.github.liquidz/antq {:mvn/version "1.7.804"}
-                   org.slf4j/slf4j-simple  {:mvn/version "1.7.36"}}})
+(def deps '{:deps {com.github.liquidz/antq {:mvn/version "2.1.927"}
+                   org.slf4j/slf4j-simple  {:mvn/version "2.0.2"}}})
 
 (def exclusions
   [])

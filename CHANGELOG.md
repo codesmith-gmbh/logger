@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. This change
 
 ## Unreleased
 
+## 0.7.96 (2022-09-25)
+
 ## 0.6.93 (2022-06-28)
 
 ### Added

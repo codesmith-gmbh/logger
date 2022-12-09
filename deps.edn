@@ -1,14 +1,14 @@
 {:paths   ["src"]
  :deps    {org.clojure/clojure                                    {:mvn/version "1.10.3"}
-           org.slf4j/slf4j-api                                    {:mvn/version "2.0.3"}
-           ch.qos.logback/logback-classic                         {:mvn/version "1.4.3"}
-           ch.qos.logback/logback-core                            {:mvn/version "1.4.3"}
+           org.slf4j/slf4j-api                                    {:mvn/version "2.0.5"}
+           ch.qos.logback/logback-classic                         {:mvn/version "1.4.5"}
+           ch.qos.logback/logback-core                            {:mvn/version "1.4.5"}
            net.logstash.logback/logstash-logback-encoder          {:mvn/version "7.2"}
-           metosin/jsonista                                       {:mvn/version "0.3.6"}
+           metosin/jsonista                                       {:mvn/version "0.3.7"}
            ; for nvd
-           com.fasterxml.jackson.core/jackson-core                {:mvn/version "2.14.0-rc1"}
-           com.fasterxml.jackson.core/jackson-databind            {:mvn/version "2.14.0-rc1"}
-           com.fasterxml.jackson.datatype/jackson-datatype-jsr310 {:mvn/version "2.14.0-rc1"}}
+           com.fasterxml.jackson.core/jackson-core                {:mvn/version "2.14.1"}
+           com.fasterxml.jackson.core/jackson-databind            {:mvn/version "2.14.1"}
+           com.fasterxml.jackson.datatype/jackson-datatype-jsr310 {:mvn/version "2.14.1"}}
  :aliases {:dev    {:extra-paths ["dev" "scripts"]
                     :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
            :build  {:extra-paths ["build"]
@@ -16,7 +16,7 @@
                     :ns-default  build}
            :test   {:extra-paths ["test"]
                     :extra-deps  {org.clojure/test.check         {:mvn/version "1.1.1"}
-                                  babashka/process               {:mvn/version "0.3.11"}
+                                  babashka/process               {:mvn/version "0.4.13"}
                                   io.github.codesmith-gmbh/anvil {:git/tag "v0.10.177" :git/sha "8c1d810"}}}
-           :runner {:extra-deps {lambdaisland/kaocha {:mvn/version "1.70.1086"}}
+           :runner {:extra-deps {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
                     :main-opts  ["-m" "kaocha.runner"]}}}

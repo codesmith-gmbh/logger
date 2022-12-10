@@ -13,6 +13,6 @@
            :test   {:extra-paths ["test"]
                     :extra-deps  {org.clojure/test.check         {:mvn/version "1.1.1"}
                                   babashka/process               {:mvn/version "0.4.13"}
-                                  io.github.codesmith-gmbh/anvil {:git/tag "v0.10.177" :git/sha "8c1d810"}}}
+                                  io.github.codesmith-gmbh/anvil {:git/tag "v0.10.180" :git/sha "65f5ba3"}}}
            :runner {:extra-deps {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
                     :main-opts  ["-m" "kaocha.runner"]}}}

@@ -30,9 +30,8 @@
 (defn release [_]
   (rel/check-released-allowed release-branch-name)
   (let [jar-file (jar {})]
-    (libs/deploy {:jar-file       jar-file
-                  :lib            lib
-                  :sign-releases? false})
+    (libs/deploy {:jar-file jar-file
+                  :lib      lib})
     (rel/git-release! {:artifacts           [{:deps-coord    lib
                                               :artifact-type :mvn}]
                        :version             version

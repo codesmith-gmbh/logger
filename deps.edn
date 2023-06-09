@@ -1,9 +1,9 @@
 {:paths   ["src"]
  :deps    {org.clojure/clojure                           {:mvn/version "1.10.3"}
-           org.slf4j/slf4j-api                           {:mvn/version "2.0.5"}
-           ch.qos.logback/logback-classic                {:mvn/version "1.4.5"}
-           ch.qos.logback/logback-core                   {:mvn/version "1.4.5"}
-           net.logstash.logback/logstash-logback-encoder {:mvn/version "7.2"}
+           org.slf4j/slf4j-api                           {:mvn/version "2.0.7"}
+           ch.qos.logback/logback-classic                {:mvn/version "1.4.7"}
+           ch.qos.logback/logback-core                   {:mvn/version "1.4.7"}
+           net.logstash.logback/logstash-logback-encoder {:mvn/version "7.3"}
            metosin/jsonista                              {:mvn/version "0.3.7"}}
  :aliases {:dev    {:extra-paths ["dev" "scripts"]
                     :extra-deps  {criterium/criterium {:mvn/version "0.4.6"}}}
@@ -12,7 +12,7 @@
                     :ns-default  build}
            :test   {:extra-paths ["test"]
                     :extra-deps  {org.clojure/test.check         {:mvn/version "1.1.1"}
-                                  babashka/process               {:mvn/version "0.4.13"}
+                                  babashka/process               {:mvn/version "0.5.21"}
                                   io.github.codesmith-gmbh/anvil {:git/tag "v0.10.180" :git/sha "65f5ba3"}}}
-           :runner {:extra-deps {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
+           :runner {:extra-deps {lambdaisland/kaocha {:mvn/version "1.84.1335"}}
                     :main-opts  ["-m" "kaocha.runner"]}}}

@@ -3,7 +3,15 @@ All notable changes to this project will be documented in this file. This change
 
 ## Unreleased
 
+### Changed
+
+- bump dependencies
+
 ## 0.7.108 (2022-12-10)
+
+### Changed
+
+- bump dependencies
 
 ## 0.7.104 (2022-12-10)
 

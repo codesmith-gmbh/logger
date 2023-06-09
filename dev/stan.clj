@@ -50,7 +50,7 @@
   (log/error-e (IllegalStateException. "hello")
                nil)
 
-  (log/info-c {:a 1 :b + :t test-multifn} "hello {} {} {} "
+  (log/info-c {:a 1} "hello {} {} {} "
               :name "stan"
               :a 1
               :b 2)

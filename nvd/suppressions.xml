@@ -1,2 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd"/>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+   file name: core.specs.alpha-0.2.56.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.clojure/core\.specs\.alpha@.*$</packageUrl>
+        <cpe>cpe:/a:clojure:clojure</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spec.alpha-0.2.194.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.clojure/spec\.alpha@.*$</packageUrl>
+        <cpe>cpe:/a:clojure:clojure</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: jackson-databind-2.15.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <cpe>cpe:/a:fasterxml:jackson-databind</cpe>
+    </suppress>
+</suppressions>
